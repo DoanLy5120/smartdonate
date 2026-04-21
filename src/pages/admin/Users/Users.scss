@@ -1,0 +1,66 @@
+.usr {
+  &__mini-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+
+    @media (max-width: 640px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__mini-stat {
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    padding: 16px 18px;
+    border-top: 2px solid var(--c, #7c6df0);
+    animation: admFadeIn 0.4s ease both;
+    transition: all 0.2s;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  &__mini-val {
+    font-size: 24px;
+    font-weight: 900;
+    color: #333;
+    margin-bottom: 3px;
+  }
+
+  &__mini-label {
+    font-size: 12.5px;
+    color: var(--adm-text-sub);
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(35, 35, 35, 0.07);
+    border-radius: 10px;
+    padding: 6px;
+    color: var(--adm-text-sub);
+
+    &:focus-within {
+      border-color: rgba(124, 109, 240, 0.4);
+      background: rgba(124, 109, 240, 0.05);
+    }
+  }
+
+  &__user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}

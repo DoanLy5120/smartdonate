@@ -1,0 +1,261 @@
+.campaign-card {
+  max-width: 370px;
+  width: 95%;
+  flex-shrink: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  background: #fff;
+  position: relative;
+  isolation: isolate;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.13) !important;
+
+    .campaign-card__img {
+      transform: scale(1.07);
+    }
+
+    .campaign-card__cover-overlay {
+      opacity: 0.55;
+    }
+
+    .campaign-card__progress .ant-progress-bg {
+      box-shadow: 0 0 8px rgba(255, 77, 79, 0.5);
+    }
+  }
+
+  .ant-card-body {
+    padding: 0 !important;
+  }
+
+  // ── Cover ──────────────────────────────────────
+  &__cover {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: rgba(0, 0, 0, 0.25);
+  }
+
+  &__cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 30%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  // ── Badges ─────────────────────────────────────
+  &__badges {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(8px);
+
+    &--hot {
+      background: rgba(255, 77, 79, 0.88);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(255, 77, 79, 0.4);
+    }
+
+    &--days {
+      background: rgba(255, 255, 255, 0.88);
+      color: #389e0d;
+      border: 1px solid rgba(82, 196, 26, 0.4);
+    }
+
+    &--urgent {
+      background: rgba(255, 77, 79, 0.12);
+      color: #ff4d4f;
+      border: 1px solid rgba(255, 77, 79, 0.35);
+      animation: pulse-badge 1.4s ease infinite;
+    }
+  }
+
+  @keyframes pulse-badge {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  // ── Percent pill ────────────────────────────────
+  &__percent-pill {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    background: linear-gradient(135deg, #ff4d4f, #fa8c16);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(255, 77, 79, 0.4);
+    letter-spacing: 0.3px;
+  }
+
+  // ── Body ───────────────────────────────────────
+  &__body {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  &__title {
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.35;
+    color: #333;
+    min-height: 40px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  // ── Progress ───────────────────────────────────
+  &__progress-wrap {
+    margin: 0;
+  }
+
+  &__progress {
+    margin: 0 !important;
+
+    .ant-progress-inner {
+      border-radius: 999px;
+    }
+
+    .ant-progress-bg {
+      height: 5px !important;
+      border-radius: 999px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .ant-progress-rail, .ant-progress-track {
+      height: 5px !important;
+    }
+  }
+
+  // ── Meta ───────────────────────────────────────
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    position: relative;
+  }
+
+  &__float-icon {
+    position: absolute;
+    right: 0;
+    bottom: -5px;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff0f0, #ffe8e8);
+    border: 1.5px solid rgba(255, 77, 79, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff4d4f;
+    box-shadow: 0 4px 12px rgba(255, 77, 79, 0.15);
+    animation: float-pulse 2s ease-in-out infinite; 
+
+    .campaign-card:hover & {
+      background: linear-gradient(135deg, #ff4d4f, #fa8c16);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(255, 77, 79, 0.35);
+    }
+  }
+
+  @keyframes float-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow: 0 4px 12px rgba(255, 77, 79, 0.15);
+    }
+    50% {
+      transform: scale(1.15);
+      box-shadow: 0 6px 20px rgba(255, 77, 79, 0.3);
+    }
+  }
+
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__meta-icon {
+    color: #fa541c;
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  &__money {
+    font-weight: 700;
+    color: #ff4d4f;
+  }
+
+  &__goal {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.75);
+  }
+}
+
+.fade-load {
+  opacity: 0;
+  transform: translateY(3px);
+  filter: blur(5px); 
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, filter 0.25s ease-out;
+
+  &.loaded {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}

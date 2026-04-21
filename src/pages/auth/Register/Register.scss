@@ -1,0 +1,331 @@
+// ============ SHARED AUTH STYLES ============
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    #f0fdf4 0%,
+    #dcfce7 30%,
+    #bbf7d0 60%,
+    #86efac 100%
+  );
+  font-family: "Nunito", "Segoe UI", sans-serif;
+}
+
+// -------- Animated background --------
+.auth-background {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.18;
+  animation: floatCircle 8s ease-in-out infinite;
+
+  &--1 {
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, #4ade80, #16a34a);
+    top: -120px;
+    left: -100px;
+    animation-delay: 0s;
+  }
+  &--2 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #86efac, #22c55e);
+    bottom: -80px;
+    right: -60px;
+    animation-delay: 2.5s;
+  }
+  &--3 {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, #bbf7d0, #4ade80);
+    top: 50%;
+    left: 40%;
+    animation-delay: 5s;
+  }
+}
+
+@keyframes floatCircle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-30px) scale(1.05);
+  }
+}
+
+// -------- Main layout --------
+.auth-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  max-width: 980px;
+  min-height: unset;
+  margin: 20px;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow:
+    0 32px 80px rgba(21, 128, 61, 0.18),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+  animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// -------- Left panel --------
+.auth-left {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// -------- Right panel --------
+.auth-right {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 40px;
+  animation: fadeInRight 0.6s 0.1s both;
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.form-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-header {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.form-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #14532d;
+  margin: 0 0 6px;
+  line-height: 1.2;
+}
+
+.form-subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #000 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.submit-btn {
+  height: 48px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(90deg, #22c55e, #16a34a) !important;
+  border: none !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35) !important;
+  transition: all 0.3s !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(22, 163, 74, 0.45) !important;
+    background: linear-gradient(90deg, #16a34a, #15803d) !important;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.form-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+
+  .link-highlight {
+    color: #16a34a;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #15803d;
+      text-decoration: underline;
+    }
+  }
+}
+
+// -------- Divider with icon --------
+.divider-text {
+  text-align: center;
+  position: relative;
+  color: #9ca3af;
+  font-size: 13px;
+  margin: 4px 0;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 38%;
+    height: 1px;
+    background: #e5e7eb;
+  }
+  &::before {
+    left: 0;
+  }
+  &::after {
+    right: 0;
+  }
+}
+
+// -------- Social button --------
+.google-btn {
+  height: 44px !important;
+  border-radius: 10px !important;
+  border: 1.5px solid #e5e7eb !important;
+  color: #374151 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: #fff !important;
+  transition: all 0.25s !important;
+  box-shadow: none !important;
+
+  &:hover {
+    border-color: #d1fae5 !important;
+    background: #f9fafb !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .google-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.auth-form {
+  .ant-form-item-label > label {
+    font-weight: 600;
+  }
+  .ant-form-item {
+      margin-bottom: 10px;
+    }
+}
+
+.send-code-btn-outline {
+  background: linear-gradient(90deg, #22c55e, #16a34a) !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+// -------- Responsive --------
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column;
+    margin: 12px;
+    min-height: unset;
+    border-radius: 20px;
+  }
+
+  .auth-left {
+    flex: none;
+    padding: 32px 24px;
+
+    .logo-svg {
+      width: 100px;
+      height: 100px;
+    }
+    .brand-text h2 {
+      font-size: 24px;
+    }
+    .features {
+      display: none;
+    }
+  }
+
+  .auth-right {
+    padding: 32px 24px 40px;
+  }
+
+  .form-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+  .auth-left {
+    padding: 24px 20px;
+  }
+  .auth-right {
+    padding: 24px 20px 36px;
+  }
+}

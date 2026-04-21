@@ -1,0 +1,23 @@
+.login-page {
+  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 35%, #a7f3d0 65%, #6ee7b7 100%);
+}
+
+.remember-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -8px;
+}
+
+.forgot-link {
+  font-size: 13.5px;
+  color: #ef4444;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #dc2626;
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,173 @@
+.forgot-page {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 30%, #bbf7d0 60%, #86efac 100%);
+}
+
+// -------- Steps sidebar --------
+.steps-sidebar {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.7s 0.55s both;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: all 0.3s;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-weight: 500;
+
+  &.active {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.35);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+
+  &.done {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.8);
+
+    .step-dot {
+      background: rgba(255,255,255,0.9);
+      color: #16a34a;
+    }
+  }
+}
+
+.step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  transition: all 0.3s;
+
+  .active & {
+    background: #fff;
+    color: #16a34a;
+    border-color: #fff;
+  }
+}
+
+// -------- Email hint --------
+.email-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #374151;
+
+  .anticon {
+    color: #16a34a;
+  }
+
+  strong {
+    color: #15803d;
+  }
+}
+
+// -------- Resend row --------
+.resend-row {
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 8px;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #15803d;
+    text-decoration: underline;
+  }
+}
+
+// -------- Success state --------
+.success-state {
+  text-align: center;
+  padding: 20px 0;
+
+  .success-icon {
+    font-size: 72px;
+    color: #22c55e;
+    margin-bottom: 16px;
+    animation: successPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #14532d;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@keyframes successPop {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+// -------- OTP input styling --------
+.otp-input-group {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 8px;
+
+  input {
+    width: 48px !important;
+    height: 52px !important;
+    text-align: center !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    border: 1.5px solid #d1fae5 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .steps-sidebar { display: none; }
+}

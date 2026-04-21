@@ -1,0 +1,344 @@
+@keyframes ds-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ds-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes ds-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.ds-page {
+  min-height: 100vh;
+  background: #f4f6f8;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 36px 16px 60px;
+  animation: ds-fadeIn 0.4s ease both;
+}
+
+.ds-card {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.07);
+  animation: ds-fadeIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+/* Header */
+.ds-header {
+  background: #f0fdf4;
+  padding: 32px 24px 26px;
+  text-align: center;
+  border-bottom: 1px solid #dcfce7;
+
+  &--failed {
+    background: #fff5f5;
+    border-color: #fee2e2;
+  }
+
+  &__icon-wrap {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+  }
+
+  &__ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid #86efac;
+    animation: ds-ring 2.2s ease-out infinite;
+    &--2 {
+      animation-delay: 0.7s;
+    }
+  }
+
+  &__icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1.5px solid #bbf7d0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #16a34a;
+    position: relative;
+    z-index: 1;
+
+    &--failed {
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+  }
+
+  &__title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #15803d;
+    margin-bottom: 4px;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: #4ade80;
+  }
+}
+
+/* Amount */
+.ds-amount {
+  padding: 22px 24px 20px;
+  text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+  position: relative;
+  overflow: hidden;
+  animation: ds-fadeIn 0.4s ease 0.1s both;
+
+  &__label {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+
+  &__val {
+    font-size: 34px;
+    font-weight: 800;
+    color: #ef4444;
+    letter-spacing: -0.5px;
+  }
+
+  &__unit {
+    font-size: 15px;
+    font-weight: 400;
+    color: #9ca3af;
+    margin-left: 6px;
+  }
+
+  &__shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.6) 50%,
+      transparent 60%
+    );
+    animation: ds-shimmer 3s ease infinite;
+    pointer-events: none;
+  }
+}
+
+/* Dashed divider */
+.ds-dashed {
+  margin: 0 24px;
+  border: none;
+  border-top: 1.5px dashed #e5e7eb;
+  position: relative;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #f4f6f8;
+    border: 1px solid #e5e7eb;
+  }
+  &::before {
+    left: -33px;
+  }
+  &::after {
+    right: -33px;
+  }
+}
+
+/* Section */
+.ds-section {
+  padding: 18px 24px;
+  animation: ds-fadeIn 0.4s ease 0.15s both;
+
+  &__label {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 10px;
+  }
+}
+
+.ds-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 16px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__key {
+    font-size: 13px;
+    color: #6b7280;
+    flex-shrink: 0;
+  }
+
+  &__val {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #111827;
+    text-align: right;
+    word-break: break-all;
+
+    &--mono {
+      font-size: 12px;
+      font-family: monospace;
+      color: #6b7280;
+      font-weight: 400;
+    }
+  }
+}
+
+/* Badges */
+.ds-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+
+  &--success {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+  }
+
+  &--info {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+  }
+}
+
+/* Thank you */
+.ds-thank {
+  margin: 0 24px 4px;
+  padding: 16px 18px;
+  background: #f9fafb;
+  border-radius: 14px;
+  border: 1px solid #f3f4f6;
+  animation: ds-fadeIn 0.4s ease 0.2s both;
+
+  &__quote {
+    font-size: 13.5px;
+    color: #4b5563;
+    line-height: 1.7;
+    text-align: center;
+    font-style: italic;
+  }
+
+  &__name {
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 8px;
+  }
+}
+
+/* Actions */
+.ds-actions {
+  padding: 20px 24px 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  animation: ds-fadeIn 0.4s ease 0.25s both;
+}
+
+.ds-btn {
+  height: 46px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all 0.2s ease;
+
+  &--outline {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    color: #374151;
+    &:hover {
+      background: #f9fafb;
+      transform: translateY(-1px);
+    }
+  }
+
+  &--primary {
+    background: #ef4444;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+    &:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98) !important;
+  }
+}
+
+.ds-share-sub {
+  width: 100%;
+  padding: 8px 24px 22px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: color 0.2s;
+  animation: ds-fadeIn 0.4s ease 0.3s both;
+
+  &:hover {
+    color: #ef4444;
+  }
+}

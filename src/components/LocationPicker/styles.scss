@@ -1,0 +1,17 @@
+.cc-suggest {
+  margin-top: 8px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow: auto;
+  background: #fff;
+
+  &__item {
+    padding: 10px;
+    cursor: pointer;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
+}
