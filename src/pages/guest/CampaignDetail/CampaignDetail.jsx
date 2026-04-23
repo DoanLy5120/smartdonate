@@ -29,6 +29,84 @@ import "./CampaignDetail.scss";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
+const ActivitySection = ({ data }) => {
+  if (!data || data.length === 0) return null;
+
+  const fmt = (n) => new Intl.NumberFormat("vi-VN").format(n) + " đ";
+
+  const totalAll = data.reduce((s, d) => s + d.tong_tien_dot, 0);
+
+  return (
+    <div className="cd-activity">
+      <div className="cd-activity__timeline">
+        {data.map((dot, idx) => {
+
+          return (
+            <div className="cd-activity__block" key={dot.giao_dich_id}>
+              {/* Dot trên timeline */}
+              <div className="cd-activity__dot">
+                {idx + 1}
+              </div>
+
+              <div className="cd-activity__card">
+                {/* Header */}
+                <div className="cd-activity__card-header">
+                  <span className="cd-activity__card-title">
+                    Đợt giải ngân #{idx + 1} · Mã GD: {dot.giao_dich_id}
+                  </span>
+                  <span
+                    className="cd-activity__badge"
+                  >
+                    {fmt(dot.tong_tien_dot)}
+                  </span>
+                </div>
+
+                {/* Items */}
+                <div className="cd-activity__items">
+                  {dot.chi_tieu.map((item, i) => {
+                    const pct = Math.round((item.so_tien / dot.tong_tien_dot) * 100);
+                    return (
+                      <div className="cd-activity__row" key={i}>
+                        <div
+                          className="cd-activity__row-dot"
+                        />
+                        <div className="cd-activity__row-name">{item.ten}</div>
+                        <div className="cd-activity__row-bar-wrap">
+                          <div
+                            className="cd-activity__row-bar"
+                            style={{ width: `${pct}%`, background: "#ff4d4f" }}
+                          />
+                        </div>
+                        <div className="cd-activity__row-amt">
+                          {fmt(item.so_tien)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="cd-activity__divider" />
+                <div className="cd-activity__sum-row">
+                  <span className="cd-activity__sum-label">Tổng đợt này</span>
+                  <span className="cd-activity__sum-val">
+                    {fmt(dot.tong_tien_dot)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Tổng tất cả */}
+      <div className="cd-activity__total">
+        <span>Tổng đã giải ngân ({data.length} đợt)</span>
+        <strong>{fmt(totalAll)}</strong>
+      </div>
+    </div>
+  );
+};
+
 export default function CampaignDetail() {
   const { id } = useParams();
   const location = useLocation();
@@ -104,11 +182,12 @@ export default function CampaignDetail() {
             return {
               id: i,
               name,
-              amount: Number(d?.so_tien),
-              time: d?.created_at, 
+              amount: Number(d?.so_tien ),
+              time: d?.created_at,
               avatar: name.charAt(0).toUpperCase(),
             };
           }) || [],
+        chi_tieu_theo_dot: data.chi_tieu_theo_dot || [],
       }));
 
       setDonorPagination({
@@ -169,8 +248,8 @@ export default function CampaignDetail() {
         <div className="cd-info">
           <div className="cd-info__grid">
             <div className="cd-info__item">
-              <span className="cd-info__label">Mã chuyển khoản</span>
-              <span className="cd-info__value">{campaign.codebank}</span>
+              <span className="cd-info__label">Địa điểm hoạt động</span>
+              <span className="cd-info__value">{campaign.location}</span>
             </div>
             <div className="cd-info__item">
               <span className="cd-info__label">Danh mục</span>
@@ -188,6 +267,10 @@ export default function CampaignDetail() {
             </div>
           </div>
           <p className="cd-info__desc">{campaign.description}</p>
+          <div className="cd-info__item">
+            <span className="cd-info__label">Hoạt động giải ngân</span>
+            <ActivitySection data={campaign.chi_tieu_theo_dot} />
+          </div>
         </div>
       ),
     },
@@ -219,9 +302,7 @@ export default function CampaignDetail() {
               </div>
             </div>
             <ul className="cd-org__desc">
-              {campaign.org.description.map((d, i) => (
-                <li key={i}>{d}</li>
-              ))}
+              {campaign.org.description}
             </ul>
           </div>
           <div className="cd-org__right">
