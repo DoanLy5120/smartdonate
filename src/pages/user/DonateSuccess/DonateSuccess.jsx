@@ -138,7 +138,7 @@ export default function DonateSuccess() {
               className="ds-btn ds-btn--outline"
               onClick={() => {
                 if (campaignId) {
-                  navigate(`/chien-dich/${campaignId}`);
+                  navigate(`/chien-dich/chi-tiet/${campaignId}`);
                 } else {
                   navigate("/chien-dich");
                 }
@@ -272,7 +272,7 @@ export default function DonateSuccess() {
             className="ds-btn ds-btn--outline"
             onClick={() => {
               if (campaignId) {
-                navigate(`/chien-dich/${campaignId}`);
+                navigate(`/chien-dich/chi-tiet/${campaignId}`);
               } else {
                 navigate("/chien-dich");
               }
