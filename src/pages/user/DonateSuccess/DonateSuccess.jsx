@@ -270,11 +270,15 @@ export default function DonateSuccess() {
         <div className="ds-actions">
           <button
             className="ds-btn ds-btn--outline"
-            onClick={() =>
-              navigate("/chien-dich", { state: { refresh: true } })
-            }
+            onClick={() => {
+              if (campaignId) {
+                navigate(`/chien-dich/${campaignId}`);
+              } else {
+                navigate("/chien-dich");
+              }
+            }}
           >
-            <FiHome size={15} /> Về trang chủ
+            <FiHome size={15} /> Về chiến dịch
           </button>
           <button className="ds-btn ds-btn--primary">
             <FiShare2 size={15} /> Chia sẻ
