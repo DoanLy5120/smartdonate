@@ -22,7 +22,6 @@ import useComments from "../../hooks/useComments";
 import useAuthStore from "../../store/authStore";
 import usePostStore from "../../store/postStore";
 import useChatStore from "../../store/chatStore";
-import useRelated from "../../hooks/useRelated";
 import { useNavigate } from "react-router-dom";
 import { notification, Popconfirm } from "antd";
 import { RiRobot2Line, RiSparklingLine } from "react-icons/ri";
@@ -118,9 +117,7 @@ export default function PostDetailModal({ post, visible, onClose }) {
   const soLuong = post?.so_luong ?? post?.quantity ?? null;
   const showQuantityTag = soLuong !== null && soLuong !== 0 && soLuong !== "";
   const isDone = rawStatus === "DA_NHAN" || rawStatus === "DA_TANG";
-  const matchesMap = usePostStore((s) => s.matches);
   const fetchMatches = usePostStore((s) => s.fetchMatches);
-  const { related } = useRelated(post?.id);
   const myUserId = useAuthStore((s) => Number(s.user?.id || 0));
 
   useEffect(() => {
@@ -135,11 +132,6 @@ export default function PostDetailModal({ post, visible, onClose }) {
       fetchMatches(post.id);
     }
   }, [post?.id]);
-
-  const aiMatches =
-    post?.nguoi_dung_id === myUserId ? matchesMap[String(post?.id)] || [] : [];
-  const hasMatches = aiMatches.length > 0;
-  const hasRelated = related.length > 0;
 
   const fetchedPost = postDetail[String(activePostId)];
 
@@ -431,76 +423,6 @@ export default function PostDetailModal({ post, visible, onClose }) {
                 <span>Chia sẻ</span>
               </button>
             </div>
-
-            {/* AI Matches — ghép cặp CHO↔NHAN */}
-            {hasMatches && (
-              <>
-                <div className="pdc__divider" />
-                <div className="pdc__ai-box">
-                  <div className="pdc__ai-box-header">
-                    <div className="pdc__ai-box-title">
-                      <div className="pdc__ai-robot-icon">
-                        <RiRobot2Line size={15} />
-                        <span className="pdc__ai-ping" />
-                      </div>
-                      <span>Gợi ý phù hợp cho bạn</span>
-                      <RiSparklingLine size={12} className="pdc__ai-sparkle" />
-                    </div>
-                  </div>
-                  <div className="pdc__ai-list">
-                    {aiMatches.map((m) => (
-                      <div key={m.post?.id} className="pdc__ai-item">
-                        <div className="pdc__ai-item-icon">🤝</div>
-                        <div className="pdc__ai-item-info">
-                          <div className="pdc__ai-item-title">
-                            {m.post?.tieu_de}
-                          </div>
-                          <div className="pdc__ai-item-loc">
-                            <FiMapPin size={10} />{" "}
-                            {m.post?.dia_diem || "Không rõ"}
-                            <span className="pdc__ai-item-score">
-                              {Math.round((m.score || 0) * 100)}% khớp
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Related — bài gần vị trí */}
-            {hasRelated && (
-              <>
-                <div className="pdc__divider" />
-                <div className="pdc__ai-box">
-                  <div className="pdc__ai-box-title">
-                    <div className="pdc__ai-robot-icon">
-                      <RiRobot2Line size={15} />
-                      <span className="pdc__ai-ping" />
-                    </div>
-                    <span>Gợi ý phù hợp cho bạn</span>
-                    <RiSparklingLine size={12} className="pdc__ai-sparkle" />
-                  </div>
-                  <div className="pdc__ai-list">
-                    {related.slice(0, 4).map((r) => (
-                      <div key={r.id} className="pdc__ai-item">
-                        <div className="pdc__ai-item-info">
-                          <div className="pdc__ai-item-title">{r.tieu_de}</div>
-                          <div className="pdc__ai-item-loc">
-                            <FiMapPin size={10} /> {r.dia_diem || "Không rõ"}
-                            {r.distance_km != null && (
-                              <span>· {r.distance_km.toFixed(1)} km</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         </div>
 

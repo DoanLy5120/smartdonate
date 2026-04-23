@@ -40,11 +40,37 @@ export default function DonateSuccess() {
       // ===== VNPAY =====
       if (vnpResponseCode) {
         if (vnpResponseCode === "00") {
-          setRealStatus("success");
+          try {
+            // retry giống MoMo (do BE có thể chưa update kịp)
+            for (let i = 0; i < 5; i++) {
+              try {
+                const data = await fetchDonateDetail(orderId);
+
+                if (data) {
+                  setDonateDetail(data);
+                  setRealStatus("success");
+                  setLoading(false);
+                  return;
+                }
+              } catch {
+                // retry
+              }
+
+              await new Promise((r) => setTimeout(r, 1000));
+            }
+
+            // fallback nếu chưa có data
+            setRealStatus("pending");
+            setLoading(false);
+          } catch {
+            setRealStatus("failed");
+            setLoading(false);
+          }
         } else {
           setRealStatus("failed");
+          setLoading(false);
         }
-        setLoading(false);
+
         return;
       }
 
