@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiShare2, FiHome, FiCheckCircle, FiX } from "react-icons/fi";
-import api from "../../../api/authService";
+import useDonateStore from "../../../stores/useDonateStore";
 import "./DonateSuccess.scss";
 
 function formatVnd(n) {
@@ -20,10 +20,11 @@ export default function DonateSuccess() {
   const [loading, setLoading] = useState(true);
   const [realStatus, setRealStatus] = useState(null);
   const [donateDetail, setDonateDetail] = useState(null);
+  const { fetchDonateDetail } = useDonateStore();
 
   const orderId = searchParams.get("orderId");
-  const method = searchParams.get("method"); 
-  const status = searchParams.get("status"); 
+  const method = searchParams.get("method");
+  const status = searchParams.get("status");
 
   const amount = donateDetail?.so_tien || 0;
   const donor = donateDetail?.ho_ten || "Ẩn danh";
@@ -47,14 +48,17 @@ export default function DonateSuccess() {
       if (method === "momo" && orderId) {
         try {
           for (let i = 0; i < 5; i++) {
-            const res = await api.get(`/donate/${orderId}`);
-            const data = res.data?.data;
+            try {
+              const data = await fetchDonateDetail(orderId);
 
-            if (data) {
-              setDonateDetail(data);
-              setRealStatus("success");
-              setLoading(false);
-              return;
+              if (data) {
+                setDonateDetail(data);
+                setRealStatus("success");
+                setLoading(false);
+                return;
+              }
+            } catch {
+              // nếu BE trả 403 thì bỏ qua, retry tiếp
             }
 
             await new Promise((r) => setTimeout(r, 1000));
@@ -62,7 +66,8 @@ export default function DonateSuccess() {
 
           setRealStatus("pending");
           setLoading(false);
-        } catch {
+        } catch (err) {
+          console.error(err);
           setRealStatus("failed");
           setLoading(false);
         }
