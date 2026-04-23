@@ -104,7 +104,7 @@ export default function CampaignDetail() {
             return {
               id: i,
               name,
-              amount: Number((d?.so_tien || "0").replace(/[^\d]/g, "")),
+              amount: Number(d?.so_tien),
               time: d?.created_at, 
               avatar: name.charAt(0).toUpperCase(),
             };
