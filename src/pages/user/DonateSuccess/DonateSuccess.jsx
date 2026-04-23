@@ -23,8 +23,8 @@ export default function DonateSuccess() {
   const { fetchDonateDetail } = useDonateStore();
 
   const orderId = searchParams.get("orderId");
-  const method = searchParams.get("method");
-  const status = searchParams.get("status");
+  const resultCode = searchParams.get("resultCode");
+  const vnpResponseCode = searchParams.get("vnp_ResponseCode");
 
   const amount = donateDetail?.so_tien || 0;
   const donor = donateDetail?.ho_ten || "Ẩn danh";
@@ -38,39 +38,50 @@ export default function DonateSuccess() {
   useEffect(() => {
     async function fetchData() {
       // ===== VNPAY =====
-      if (status) {
-        setRealStatus(status);
+      if (vnpResponseCode) {
+        if (vnpResponseCode === "00") {
+          setRealStatus("success");
+        } else {
+          setRealStatus("failed");
+        }
         setLoading(false);
         return;
       }
 
       // ===== MOMO =====
-      if (method === "momo" && orderId) {
-        try {
-          for (let i = 0; i < 5; i++) {
-            try {
-              const data = await fetchDonateDetail(orderId);
+      if (resultCode) {
+        if (resultCode === "0") {
+          // thành công → gọi API lấy chi tiết
+          try {
+            for (let i = 0; i < 5; i++) {
+              try {
+                const data = await fetchDonateDetail(orderId);
 
-              if (data) {
-                setDonateDetail(data);
-                setRealStatus("success");
-                setLoading(false);
-                return;
+                if (data) {
+                  setDonateDetail(data);
+                  setRealStatus("success");
+                  setLoading(false);
+                  return;
+                }
+              } catch {
+                // chưa THANH_CONG → retry
               }
-            } catch {
-              // nếu BE trả 403 thì bỏ qua, retry tiếp
+
+              await new Promise((r) => setTimeout(r, 1000));
             }
 
-            await new Promise((r) => setTimeout(r, 1000));
+            setRealStatus("pending");
+            setLoading(false);
+          } catch {
+            setRealStatus("failed");
+            setLoading(false);
           }
-
-          setRealStatus("pending");
-          setLoading(false);
-        } catch (err) {
-          console.error(err);
+        } else {
           setRealStatus("failed");
           setLoading(false);
         }
+
+        return;
       }
     }
 
