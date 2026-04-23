@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiShare2, FiHome, FiCheckCircle, FiX } from "react-icons/fi";
-import useDonateStore from "../../../stores/useDonateStore";
+import useDonateStore from "../../../store/donateStore";
 import "./DonateSuccess.scss";
 
 function formatVnd(n) {
