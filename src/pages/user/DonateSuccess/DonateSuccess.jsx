@@ -34,6 +34,7 @@ export default function DonateSuccess() {
     donateDetail?.gateway_transaction_id ||
     searchParams.get("vnp_TransactionNo") ||
     orderId;
+  const campaignId = donateDetail?.chien_dich_id;
   const campaignName = donateDetail?.ten_chien_dich || "—";
   const orgName = donateDetail?.ten_to_chuc || "—";
   const thoiGian = donateDetail?.created_at;
@@ -135,9 +136,15 @@ export default function DonateSuccess() {
           <div className="ds-actions" style={{ padding: "24px" }}>
             <button
               className="ds-btn ds-btn--outline"
-              onClick={() => navigate("/chien-dich")}
+              onClick={() => {
+                if (campaignId) {
+                  navigate(`/chien-dich/${campaignId}`);
+                } else {
+                  navigate("/chien-dich");
+                }
+              }}
             >
-              <FiHome size={15} /> Về trang chủ
+              <FiHome size={15} /> Về chiến dịch
             </button>
           </div>
         </div>
