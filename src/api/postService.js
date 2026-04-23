@@ -71,3 +71,21 @@ export const reportPost = async (id, data) => {
   const res = await api.post(`/posts/${id}/report`, data);
   return res.data;
 };
+
+// ===== SEARCH =====
+export const searchPosts = async (params = {}) => {
+  const res = await api.get(`/posts/search`, { params });
+  return res.data;
+};
+
+// ===== RELATED (bài gần vị trí) =====
+export const getRelatedPosts = async (id) => {
+  const res = await api.get(`/posts/${id}/related`);
+  return res.data;
+};
+
+// ===== DASHBOARD =====
+export const getCommunityStats = async () => {
+  const res = await api.get(`/dashboard/community-stats`);
+  return res.data;
+};

@@ -14,24 +14,6 @@ import useChatStore from "../../../store/chatStore";
 import useAuthStore from "../../../store/authStore";
 import "./NewsFeed.scss";
 
-const COMMUNITY_STATS = [
-  {
-    icon: <BsBagHeartFill size={20} color="#ff4d4f" />,
-    value: 125,
-    label: "đồ dùng đã được tặng",
-  },
-  {
-    icon: <FaPeopleCarry size={20} color="#fa8c16" />,
-    value: 82,
-    label: "người đã nhận hỗ trợ",
-  },
-  {
-    icon: <MdFeed size={20} color="#52c41a" />,
-    value: 25,
-    label: "bài đăng tuần này",
-  },
-];
-
 export default function NewsFeed() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("cho");
@@ -43,9 +25,12 @@ export default function NewsFeed() {
 
   const fetchMatches = usePostStore((s) => s.fetchMatches);
   const matchesMap = usePostStore((s) => s.matches);
-
+  const fetchSearch = usePostStore((s) => s.fetchSearch);
   const myUserId = useAuthStore((s) => Number(s.user?.id || 0));
   const isLoggedIn = !!user;
+
+  const communityStats = usePostStore((s) => s.communityStats);
+  const fetchCommunityStats = usePostStore((s) => s.fetchCommunityStats);
 
   const chats = useChatStore((s) => s.chats);
   const totalUnread = useChatStore((s) => s.totalUnread);
@@ -61,22 +46,27 @@ export default function NewsFeed() {
   const { posts, loading, hasMore, loadMore } = usePosts(params);
 
   useEffect(() => {
-    if (!posts.length) return;
+    fetchCommunityStats();
+  }, []);
 
+  useEffect(() => {
+    if (!posts.length) return;
     posts.forEach((p) => {
-      fetchMatches(p.id);
+      // Chỉ fetch matches cho bài của chính mình
+      if (p.nguoi_dung_id === myUserId) {
+        fetchMatches(p.id);
+      }
     });
   }, [posts]);
 
   const mappedPosts = posts.map((p) => {
-    const aiData = matchesMap[p.id] || [];
 
     return {
       id: p.id,
       type: p.loai_bai?.toLowerCase(),
       user: {
         id: p.nguoi_dung_id,
-        name: p.nguoi_dung_ten || "Ẩn danh",
+        name: p.nguoi_dung_ten,
         avatar: p.nguoi_dung_ten?.charAt(0) || "?",
         color: "#1890ff",
       },
@@ -103,13 +93,18 @@ export default function NewsFeed() {
           : [],
       trang_thai: p.trang_thai,
 
-      aiSuggestions: aiData.map((m) => ({
-        id: m.post.id,
-        title: m.post.tieu_de,
-        location: m.post.dia_diem || "Không rõ",
-        matchScore: Math.round(m.match_percent || 0),
-        icon: "🤝",
-      })),
+      // Chỉ truyền matches nếu là bài của mình
+      aiSuggestions:
+        p.nguoi_dung_id === myUserId
+          ? (matchesMap[p.id] || []).map((m) => ({
+              id: m.post?.id,
+              title: m.post?.tieu_de,
+              location: m.post?.dia_diem || "Không rõ",
+              matchScore: Math.round(m.score * 100 || 0),
+              icon: "🤝",
+              type: "match", // phân biệt
+            }))
+          : [],
     };
   });
 
@@ -165,7 +160,15 @@ export default function NewsFeed() {
                   placeholder="Tìm kiếm vật dụng..."
                   prefix={<FiSearch size={15} />}
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    if (e.target.value.trim().length >= 2) {
+                      fetchSearch({
+                        keyword: e.target.value.trim(),
+                        loai_bai: tab.toUpperCase(),
+                      });
+                    }
+                  }}
                   allowClear
                 />
                 <button
@@ -292,18 +295,45 @@ export default function NewsFeed() {
             <div className="nf-community-box">
               <div className="nf-community-box__header">TÁC ĐỘNG CỘNG ĐỒNG</div>
               <div className="nf-community-stats">
-                {COMMUNITY_STATS.map((s, i) => (
+                {communityStats ? (
+                  <>
+                    <div className="nf-community-stat">
+                      <span className="nf-community-stat__icon">
+                        <BsBagHeartFill size={20} color="#ff4d4f" />
+                      </span>
+                      <span className="nf-community-stat__text">
+                        <strong>{communityStats.tong_do_da_tang ?? 0}</strong>{" "}
+                        đồ dùng đã được tặng
+                      </span>
+                    </div>
+                    <div className="nf-community-stat">
+                      <span className="nf-community-stat__icon">
+                        <FaPeopleCarry size={20} color="#fa8c16" />
+                      </span>
+                      <span className="nf-community-stat__text">
+                        <strong>
+                          {communityStats.so_nguoi_duoc_tang ?? 0}
+                        </strong>{" "}
+                        người đã nhận hỗ trợ
+                      </span>
+                    </div>
+                    <div className="nf-community-stat">
+                      <span className="nf-community-stat__icon">
+                        <MdFeed size={20} color="#52c41a" />
+                      </span>
+                      <span className="nf-community-stat__text">
+                        <strong>{communityStats.so_bai_trong_tuan ?? 0}</strong>{" "}
+                        bài đăng tuần này
+                      </span>
+                    </div>
+                  </>
+                ) : (
                   <div
-                    key={i}
-                    className="nf-community-stat"
-                    style={{ animationDelay: `${i * 0.1}s` }}
+                    style={{ color: "#aaa", fontSize: 13, padding: "8px 0" }}
                   >
-                    <span className="nf-community-stat__icon">{s.icon}</span>
-                    <span className="nf-community-stat__text">
-                      <strong>{s.value}</strong> {s.label}
-                    </span>
+                    Đang tải...
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </aside>

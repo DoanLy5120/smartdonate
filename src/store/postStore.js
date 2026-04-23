@@ -11,6 +11,9 @@ import {
   createPostComment,
   deletePostComment,
   reportPost,
+  searchPosts,
+  getRelatedPosts,
+  getCommunityStats,
 } from "../api/postService";
 
 let currentPage = 1;
@@ -18,13 +21,19 @@ let currentKey = "";
 const detailPromises = {};
 
 const usePostStore = create((set, get) => ({
+  related: {},
   posts: [],
   postDetail: {},
   matches: {},
+  loadingRelated: null,
+  searchResults: [],
+  searchLoading: false,
+  communityStats: null,
+  statsLoading: false,
   loadingMatches: null,
   loading: false,
   hasMore: true,
-  comments: {}, 
+  comments: {},
   loadingComments: null,
 
   fetchPosts: async (params = {}, loadMore = false) => {
@@ -302,7 +311,7 @@ const usePostStore = create((set, get) => ({
 
         const updated = old
           .map((c) => {
-            if (c.id === commentId) return null; 
+            if (c.id === commentId) return null;
             const newReplies = (c.replies || []).filter(
               (r) => r.id !== commentId,
             );
@@ -343,6 +352,53 @@ const usePostStore = create((set, get) => ({
     } catch (err) {
       console.error("Lỗi report:", err);
       throw err;
+    }
+  },
+
+  fetchRelated: async (id, force = false) => {
+    const key = String(id);
+    if (!force && get().related[key]) return get().related[key];
+    if (get().loadingRelated === key) return;
+
+    set({ loadingRelated: key });
+    try {
+      const res = await getRelatedPosts(id);
+      const data = res?.data || [];
+      set({
+        related: { ...get().related, [key]: data },
+        loadingRelated: null,
+      });
+      return data;
+    } catch (err) {
+      console.error("Lỗi fetch related:", err);
+      set({ loadingRelated: null });
+      return [];
+    }
+  },
+
+  fetchSearch: async (params = {}) => {
+    set({ searchLoading: true });
+    try {
+      const res = await searchPosts(params);
+      const data = res?.data?.data || res?.data || [];
+      set({ searchResults: data, searchLoading: false });
+      return data;
+    } catch (err) {
+      console.error("Lỗi search:", err);
+      set({ searchLoading: false });
+      return [];
+    }
+  },
+
+  fetchCommunityStats: async () => {
+    set({ statsLoading: true });
+    try {
+      const res = await getCommunityStats();
+      set({ communityStats: res, statsLoading: false });
+      return res;
+    } catch (err) {
+      console.error("Lỗi fetch stats:", err);
+      set({ statsLoading: false });
     }
   },
 }));

@@ -30,6 +30,7 @@ import ReportSheet from "../../components/ReportSheet/index";
 import usePostStore from "../../store/postStore";
 import useAuthStore from "../../store/authStore";
 import useChatStore from "../../store/chatStore";
+import useRelated from "../../hooks/useRelated";
 import { formatPostTime } from "../../utils/formatTime";
 import "./styles.scss";
 
@@ -43,7 +44,9 @@ export default function PostCard({ post, style, onDelete }) {
   const { fetchPostDetail, postDetail } = usePostStore();
   const menuRef = useRef(null);
   const { user } = useAuthStore();
-
+  const hasAiSuggestions = post.aiSuggestions?.length > 0;
+  const { related } = useRelated(post.id);
+  const hasRelated = related.length > 0 && !hasAiSuggestions;
   const { toggleLike, reportPost } = usePostStore();
   const openChatWith = useChatStore((s) => s.openChatWith);
 
@@ -81,7 +84,6 @@ export default function PostCard({ post, style, onDelete }) {
         { label: "Đã nhận đủ", value: "DA_NHAN", icon: <FaCheckCircle /> },
       ];
 
-  const hasAiSuggestions = post.aiSuggestions?.length > 0;
   const isMyPost = user?.id === post.user?.id;
   const images = post.images || [];
   const imgCount = images.length;
@@ -352,7 +354,7 @@ export default function PostCard({ post, style, onDelete }) {
           {hasAiSuggestions && (
             <div className="post-card__ai-header-badge">
               <RiSparklingLine size={11} />
-              AI GỢI Ý
+              AI gợi ý hỗ trợ bạn
             </div>
           )}
 
@@ -531,9 +533,6 @@ export default function PostCard({ post, style, onDelete }) {
                 <span>Gợi ý phù hợp cho bạn</span>
                 <RiSparklingLine size={12} className="post-card__ai-sparkle" />
               </div>
-              <span className="post-card__ai-count">
-                {post.aiSuggestions.length} kết quả
-              </span>
             </div>
             <div className="post-card__ai-list">
               {post.aiSuggestions.map((sug) => (
@@ -556,6 +555,47 @@ export default function PostCard({ post, style, onDelete }) {
                     }}
                   >
                     Xem ngay <FiChevronRight size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* AI Related — bài gần bạn */}
+        {hasRelated && (
+          <div className="post-card__ai-box">
+            <div className="post-card__ai-box-header">
+              <div className="post-card__ai-box-title">
+                <div className="post-card__ai-robot-icon">
+                  <RiRobot2Line size={15} />
+                  <span className="post-card__ai-ping" />
+                </div>
+                <span>Gợi ý cùng nhu cầu trong khu vực của bạn</span>
+                <RiSparklingLine size={12} className="post-card__ai-sparkle" />
+              </div>
+            </div>
+            <div className="post-card__ai-list">
+              {related.slice(0, 3).map((r) => (
+                <div key={r.id} className="post-card__ai-item">
+                  <div className="post-card__ai-item-info">
+                    <div className="post-card__ai-item-title">{r.tieu_de}</div>
+                    <div className="post-card__ai-item-loc">
+                      <FiMapPin size={10} /> {r.dia_diem || "Không rõ"}
+                      {r.distance_km != null && (
+                        <span className="post-card__ai-item-dist">
+                          · {r.distance_km.toFixed(1)} km
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    className="post-card__ai-view-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActivePostId(r.id);
+                    }}
+                  >
+                    Xem <FiChevronRight size={11} />
                   </button>
                 </div>
               ))}
