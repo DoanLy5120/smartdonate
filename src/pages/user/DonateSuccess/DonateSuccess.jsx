@@ -22,7 +22,7 @@ export default function DonateSuccess() {
   const [donateDetail, setDonateDetail] = useState(null);
   const { fetchDonateDetail } = useDonateStore();
 
-  const orderId = searchParams.get("orderId");
+  const orderId = searchParams.get("orderId") || searchParams.get("vnp_TxnRef");
   const resultCode = searchParams.get("resultCode");
   const vnpResponseCode = searchParams.get("vnp_ResponseCode");
 
@@ -30,7 +30,10 @@ export default function DonateSuccess() {
   const donor = donateDetail?.ho_ten || "Ẩn danh";
   const methodLabel =
     donateDetail?.phuong_thuc_thanh_toan === "momo" ? "MoMo" : "VNPay";
-  const txId = donateDetail?.gateway_transaction_id || orderId;
+  const txId =
+    donateDetail?.gateway_transaction_id ||
+    searchParams.get("vnp_TransactionNo") ||
+    orderId;
   const campaignName = donateDetail?.ten_chien_dich || "—";
   const orgName = donateDetail?.ten_to_chuc || "—";
   const thoiGian = donateDetail?.created_at;
@@ -149,7 +152,7 @@ export default function DonateSuccess() {
           <div className="ds-header">
             <div className="ds-header__title">Đang xử lý giao dịch</div>
             <div className="ds-header__sub">
-              Hệ thống đang xác nhận thanh toán từ MoMo, vui lòng chờ thêm
+              Hệ thống đang xác nhận thanh toán, vui lòng chờ thêm
             </div>
           </div>
         </div>
