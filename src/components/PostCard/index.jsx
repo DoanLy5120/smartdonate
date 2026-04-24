@@ -22,6 +22,7 @@ import {
   FaRegComment,
 } from "react-icons/fa";
 import { BsBox2HeartFill } from "react-icons/bs";
+import { FaRegHandshake } from "react-icons/fa";
 import { SiMessenger } from "react-icons/si";
 import { notification } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -60,6 +61,7 @@ export default function PostCard({ post, style, onDelete }) {
   const hasAiSuggestions = isMyPost && aiSuggestions.length > 0;
   const { related } = useRelated(post.id);
   const hasRelated = !isMyPost && related.length > 0;
+  const [relatedPhase, setRelatedPhase] = useState("idle");
   const { toggleLike, reportPost } = usePostStore();
   const openChatWith = useChatStore((s) => s.openChatWith);
 
@@ -135,10 +137,40 @@ export default function PostCard({ post, style, onDelete }) {
 
   useEffect(() => {
     if (!hasAiSuggestions) return;
-    //setAiPhase("loading");
-    const timer = setTimeout(() => setAiPhase("done"), 2500);
-    return () => clearTimeout(timer);
+
+    const start = setTimeout(() => {
+      setAiPhase("loading");
+
+      const timer = setTimeout(() => {
+        setAiPhase("done");
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }, 0);
+
+    return () => clearTimeout(start);
   }, [hasAiSuggestions]);
+
+  useEffect(() => {
+    if (isMyPost) return;
+    if (!hasRelated) return;
+
+    let loadingTimer;
+    let doneTimer;
+
+    loadingTimer = setTimeout(() => {
+      setRelatedPhase("loading");
+
+      doneTimer = setTimeout(() => {
+        setRelatedPhase("done");
+      }, 2500);
+    }, 0);
+
+    return () => {
+      clearTimeout(loadingTimer);
+      clearTimeout(doneTimer);
+    };
+  }, [hasRelated, isMyPost]);
 
   useEffect(() => {
     if (activePostId && activePostId !== post.id) {
@@ -365,7 +397,6 @@ export default function PostCard({ post, style, onDelete }) {
           >
             {post.user.avatar}
           </div>
-
           <div className="post-card__user-info">
             <div className="post-card__username">{post.user.name}</div>
             <div className="post-card__meta">
@@ -378,21 +409,16 @@ export default function PostCard({ post, style, onDelete }) {
               </span>
             </div>
           </div>
-
-          {hasAiSuggestions && (
+          {hasAiSuggestions && aiPhase === "done" && (
             <div className="post-card__ai-header-badge">
-              <RiSparklingLine size={11} />
-              AI hỗ trợ cho bạn
+              <RiSparklingLine size={11} /> AI hỗ trợ cho bạn
             </div>
           )}
-
           {!hasAiSuggestions && hasRelated && (
             <div className="post-card__ai-header-badge">
-              <RiSparklingLine size={11} />
-              AI gợi ý gần bạn
+              <RiSparklingLine size={11} /> AI gợi ý gần bạn
             </div>
           )}
-
           <div className="post-card__more-wrap" ref={menuRef}>
             <button className="post-card__more-btn" onClick={handleMenuToggle}>
               <FiMoreVertical size={20} />
@@ -595,7 +621,7 @@ export default function PostCard({ post, style, onDelete }) {
                 {aiSuggestions.map((sug) => (
                   <div key={sug.id} className="post-card__ai-item">
                     <div className="post-card__ai-item-icon">
-                      <BsBox2HeartFill color="#096dd9" size={30} />
+                      <FaRegHandshake color="#096dd9" size={30} />
                     </div>
                     <div className="post-card__ai-item-info">
                       <div className="post-card__ai-item-title">
@@ -625,8 +651,16 @@ export default function PostCard({ post, style, onDelete }) {
         )}
 
         {/* AI Related — bài gần bạn */}
-        {!isMyPost && hasRelated && (
-          <div className="post-card__ai-box">
+        {!isMyPost && relatedPhase === "loading" && (
+          <div className="post-card__ai-loading">
+            <span className="post-card__ai-spinner" />
+            <span className="post-card__ai-loading-text">
+              Đang tìm bài gần bạn...
+            </span>
+          </div>
+        )}
+        {!isMyPost && relatedPhase === "done" && hasRelated && (
+          <div className="post-card__ai-box post-card__ai-box--animate">
             <div className="post-card__ai-box-header">
               <div className="post-card__ai-box-title">
                 <div className="post-card__ai-robot-icon">

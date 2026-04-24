@@ -119,9 +119,7 @@ const publicRoutes = [
     path: "/bang-tin",
     element: (
       <PublicRoute>
-        <MainLayout>
           <NewsFeed />
-        </MainLayout>
       </PublicRoute>
     ),
   },

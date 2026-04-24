@@ -5,6 +5,8 @@ import { FiSearch, FiGift, FiPackage, FiPlus } from "react-icons/fi";
 import { BsBagHeartFill } from "react-icons/bs";
 import { FaPeopleCarry } from "react-icons/fa";
 import { MdFeed } from "react-icons/md";
+import Header from "../../../components/Header/index";
+import Menu from "../../../components/Menu/index.jsx"
 import PostCard from "../../../components/PostCard/index.jsx";
 import AddressPromptModal from "../../../components/AddressPromptModal/index.jsx";
 import { shouldShowAddressPrompt } from "../../../components/AddressPromptModal/addressPromptUtils.js";
@@ -60,7 +62,6 @@ export default function NewsFeed() {
   }, [posts]);
 
   const mappedPosts = posts.map((p) => {
-    
     return {
       id: p.id,
       type: p.loai_bai?.toLowerCase(),
@@ -83,13 +84,10 @@ export default function NewsFeed() {
       title: p.tieu_de,
       desc: p.mo_ta,
       so_luong: p.so_luong,
-      images:
-        tab === "cho"
-          ? p.hinh_anh_urls?.length
-            ? p.hinh_anh_urls
-            : p.hinh_anh_url
-              ? [p.hinh_anh_url]
-              : []
+      images: p.hinh_anh_urls?.length
+        ? p.hinh_anh_urls
+        : p.hinh_anh_url
+          ? [p.hinh_anh_url]
           : [],
       trang_thai: p.trang_thai,
 
@@ -129,6 +127,8 @@ export default function NewsFeed() {
 
   return (
     <>
+    <Header />
+    <Menu />
       {showAddressModal && (
         <AddressPromptModal
           userId={user.id}

@@ -27,7 +27,6 @@ const usePostStore = create((set, get) => ({
   posts: [],
   postDetail: {},
   matches: {},
-  loadingRelated: null,
   searchResults: [],
   searchLoading: false,
   communityStats: null,
@@ -181,7 +180,7 @@ const usePostStore = create((set, get) => ({
 
     try {
       const res = await getPostMatches(id);
-      console.log("fetchMatches raw res:", res); 
+      console.log("fetchMatches raw res:", res);
       console.log("fetchMatches res.data:", res?.data);
 
       const data = res?.data || [];
@@ -369,13 +368,18 @@ const usePostStore = create((set, get) => ({
   fetchRelated: async (postId) => {
     const key = String(postId);
 
-    if (get().relatedStatus[key] === "empty") return;
-    if (get().loadingRelated === key) return;
+    if (get().relatedStatus[key] === "loading") return;
 
-    set({ loadingRelated: key });
+    set((state) => ({
+      relatedStatus: {
+        ...state.relatedStatus,
+        [key]: "loading",
+      },
+    }));
 
     try {
       const res = await getRelatedPosts(postId);
+
       const rawData = res?.data ?? [];
       const data = rawData.map((item) => ({
         ...item.post,
@@ -384,8 +388,6 @@ const usePostStore = create((set, get) => ({
         score: item.score,
       }));
 
-      const finalStatus = data.length === 0 ? "empty" : "ok";
-
       set((state) => ({
         related: {
           ...state.related,
@@ -393,14 +395,15 @@ const usePostStore = create((set, get) => ({
         },
         relatedStatus: {
           ...state.relatedStatus,
-          [key]: finalStatus,
+          [key]: data.length ? "ok" : "empty",
         },
-        loadingRelated: null,
       }));
-    } catch {
+    } catch{
       set((state) => ({
-        relatedStatus: { ...state.relatedStatus, [key]: "empty" },
-        loadingRelated: null,
+        relatedStatus: {
+          ...state.relatedStatus,
+          [key]: "empty",
+        },
       }));
     }
   },
