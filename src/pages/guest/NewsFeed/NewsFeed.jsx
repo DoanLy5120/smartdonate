@@ -60,7 +60,7 @@ export default function NewsFeed() {
   }, [posts]);
 
   const mappedPosts = posts.map((p) => {
-
+    
     return {
       id: p.id,
       type: p.loai_bai?.toLowerCase(),
@@ -100,7 +100,7 @@ export default function NewsFeed() {
               id: m.post?.id,
               title: m.post?.tieu_de,
               location: m.post?.dia_diem || "Không rõ",
-              matchScore: Math.round(m.score * 100 || 0),
+              matchScore: Math.round(m.match_percent),
               icon: "🤝",
               type: "match", // phân biệt
             }))
