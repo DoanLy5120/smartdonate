@@ -47,7 +47,7 @@ export default function PostCard({ post, style, onDelete }) {
   const { user } = useAuthStore();
   const hasAiSuggestions = post.aiSuggestions?.length > 0;
   const { related } = useRelated(post.id);
-  const hasRelated = related.length > 0 && !hasAiSuggestions;
+  const hasRelated = related.length > 0;
   const { toggleLike, reportPost } = usePostStore();
   const openChatWith = useChatStore((s) => s.openChatWith);
 
