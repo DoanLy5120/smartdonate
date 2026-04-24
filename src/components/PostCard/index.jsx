@@ -21,6 +21,7 @@ import {
   FaCheckCircle,
   FaRegComment,
 } from "react-icons/fa";
+import { BsBox2HeartFill } from "react-icons/bs";
 import { SiMessenger } from "react-icons/si";
 import { notification } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -42,12 +43,23 @@ export default function PostCard({ post, style, onDelete }) {
   const [reportLoading, setReportLoading] = useState(false);
   const [activePostId, setActivePostId] = useState(null);
   const { fetchPostDetail, postDetail } = usePostStore();
+  const { fetchMatches, matches, matchesStatus } = usePostStore();
+  const matchKey = String(post.id);
+  const matchStatus = matchesStatus?.[matchKey];
+  const postMatches = matches[String(post.id)] || [];
   const [aiPhase, setAiPhase] = useState("idle");
   const menuRef = useRef(null);
   const { user } = useAuthStore();
-  const hasAiSuggestions = post.aiSuggestions?.length > 0;
+  const isMyPost = user?.id === post.user?.id;
+  const aiSuggestions = postMatches.map((item) => ({
+    id: item.post?.id,
+    title: item.post?.tieu_de,
+    location: item.post?.dia_diem,
+    matchScore: Math.round(item.match_percent ?? 0),
+  }));
+  const hasAiSuggestions = isMyPost && aiSuggestions.length > 0;
   const { related } = useRelated(post.id);
-  const hasRelated = related.length > 0;
+  const hasRelated = !isMyPost && related.length > 0;
   const { toggleLike, reportPost } = usePostStore();
   const openChatWith = useChatStore((s) => s.openChatWith);
 
@@ -58,6 +70,8 @@ export default function PostCard({ post, style, onDelete }) {
 
   const { updatePost, deletePost: deletePostStore } = usePostStore();
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [aiExpanded, setAiExpanded] = useState(false);
+  const [relatedExpanded, setRelatedExpanded] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
@@ -85,7 +99,6 @@ export default function PostCard({ post, style, onDelete }) {
         { label: "Đã nhận đủ", value: "DA_NHAN", icon: <FaCheckCircle /> },
       ];
 
-  const isMyPost = user?.id === post.user?.id;
   const images = post.images || [];
   const imgCount = images.length;
 
@@ -114,22 +127,18 @@ export default function PostCard({ post, style, onDelete }) {
   const isStatusDone = (status) => status === "DA_TANG" || status === "DA_NHAN";
 
   useEffect(() => {
+    if (!post.id) return;
+    if (!isMyPost) return;
+    if (matchStatus === "empty") return;
+    fetchMatches(post.id);
+  }, [post.id, matchStatus]);
+
+  useEffect(() => {
     if (!hasAiSuggestions) return;
-
-    // Dùng 1 timer duy nhất, không setstate sync
-    const timer = setTimeout(() => {
-      setAiPhase("loading");
-    }, 0);
-
-    const timer2 = setTimeout(() => {
-      setAiPhase("done");
-    }, 1500);
-
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(timer2);
-    };
-  }, [post.id]); 
+    //setAiPhase("loading");
+    const timer = setTimeout(() => setAiPhase("done"), 2500);
+    return () => clearTimeout(timer);
+  }, [hasAiSuggestions]);
 
   useEffect(() => {
     if (activePostId && activePostId !== post.id) {
@@ -373,7 +382,14 @@ export default function PostCard({ post, style, onDelete }) {
           {hasAiSuggestions && (
             <div className="post-card__ai-header-badge">
               <RiSparklingLine size={11} />
-              AI gợi ý hỗ trợ bạn
+              AI hỗ trợ cho bạn
+            </div>
+          )}
+
+          {!hasAiSuggestions && hasRelated && (
+            <div className="post-card__ai-header-badge">
+              <RiSparklingLine size={11} />
+              AI gợi ý gần bạn
             </div>
           )}
 
@@ -560,36 +576,56 @@ export default function PostCard({ post, style, onDelete }) {
                 <span>Gợi ý phù hợp cho bạn</span>
                 <RiSparklingLine size={12} className="post-card__ai-sparkle" />
               </div>
+              <button
+                className={`post-card__ai-toggle${aiExpanded ? " post-card__ai-toggle--open" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAiExpanded((p) => !p);
+                }}
+              >
+                <span className="post-card__ai-toggle-count">
+                  {aiSuggestions.length}
+                </span>
+                <span className="post-card__ai-toggle-label">gợi ý</span>
+                <span className="post-card__ai-toggle-arrow">›</span>
+              </button>
             </div>
-            <div className="post-card__ai-list">
-              {post.aiSuggestions.map((sug) => (
-                <div key={sug.id} className="post-card__ai-item">
-                  <div className="post-card__ai-item-icon">{sug.icon}</div>
-                  <div className="post-card__ai-item-info">
-                    <div className="post-card__ai-item-title">{sug.title}</div>
-                    <div className="post-card__ai-item-loc">
-                      <FiMapPin size={10} /> {sug.location}
-                      <span className="post-card__ai-item-score">
-                        {sug.matchScore}% khớp
-                      </span>
+            {aiExpanded && (
+              <div className="post-card__ai-list post-card__ai-list--reveal">
+                {aiSuggestions.map((sug) => (
+                  <div key={sug.id} className="post-card__ai-item">
+                    <div className="post-card__ai-item-icon">
+                      <BsBox2HeartFill color="#096dd9" size={30} />
                     </div>
+                    <div className="post-card__ai-item-info">
+                      <div className="post-card__ai-item-title">
+                        {sug.title}
+                      </div>
+                      <div className="post-card__ai-item-loc">
+                        <FiMapPin size={10} /> {sug.location}
+                        <span className="post-card__ai-item-score">
+                          {sug.matchScore}% khớp
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      className="post-card__ai-view-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivePostId(sug.id);
+                      }}
+                    >
+                      Xem ngay <FiChevronRight size={12} />
+                    </button>
                   </div>
-                  <button
-                    className="post-card__ai-view-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivePostId(sug.id);
-                    }}
-                  >
-                    Xem ngay <FiChevronRight size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
+
         {/* AI Related — bài gần bạn */}
-        {hasRelated && (
+        {!isMyPost && hasRelated && (
           <div className="post-card__ai-box">
             <div className="post-card__ai-box-header">
               <div className="post-card__ai-box-title">
@@ -597,36 +633,56 @@ export default function PostCard({ post, style, onDelete }) {
                   <RiRobot2Line size={15} />
                   <span className="post-card__ai-ping" />
                 </div>
-                <span>Gợi ý cùng nhu cầu trong khu vực của bạn</span>
+                <span>Gợi ý cùng nhu cầu trong khu vực</span>
                 <RiSparklingLine size={12} className="post-card__ai-sparkle" />
               </div>
+              <button
+                className={`post-card__ai-toggle${relatedExpanded ? " post-card__ai-toggle--open" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRelatedExpanded((p) => !p);
+                }}
+              >
+                <span className="post-card__ai-toggle-count">
+                  {related.slice(0, 3).length}
+                </span>
+                <span className="post-card__ai-toggle-label">gần bạn</span>
+                <span className="post-card__ai-toggle-arrow">›</span>
+              </button>
             </div>
-            <div className="post-card__ai-list">
-              {related.slice(0, 3).map((r) => (
-                <div key={r.id} className="post-card__ai-item">
-                  <div className="post-card__ai-item-info">
-                    <div className="post-card__ai-item-title">{r.tieu_de}</div>
-                    <div className="post-card__ai-item-loc">
-                      <FiMapPin size={10} /> {r.dia_diem || "Không rõ"}
-                      {r.distance_km != null && (
-                        <span className="post-card__ai-item-dist">
-                          · {r.distance_km.toFixed(1)} km
-                        </span>
-                      )}
+            {relatedExpanded && (
+              <div className="post-card__ai-list post-card__ai-list--reveal">
+                {related.slice(0, 3).map((r) => (
+                  <div key={r.id} className="post-card__ai-item">
+                    <div className="post-card__ai-item-icon">
+                      <BsBox2HeartFill color="#096dd9" size={30} />
                     </div>
+                    <div className="post-card__ai-item-info">
+                      <div className="post-card__ai-item-title">
+                        {r.tieu_de}
+                      </div>
+                      <div className="post-card__ai-item-loc">
+                        <FiMapPin size={10} /> {r.dia_diem || "Không rõ"}
+                        {r.distance_km != null && (
+                          <span className="post-card__ai-item-dist">
+                            · {r.distance_km.toFixed(1)} km
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      className="post-card__ai-view-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivePostId(r.id);
+                      }}
+                    >
+                      Xem <FiChevronRight size={11} />
+                    </button>
                   </div>
-                  <button
-                    className="post-card__ai-view-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivePostId(r.id);
-                    }}
-                  >
-                    Xem <FiChevronRight size={11} />
-                  </button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

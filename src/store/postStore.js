@@ -23,6 +23,7 @@ const detailPromises = {};
 const usePostStore = create((set, get) => ({
   related: {},
   relatedStatus: {},
+  matchesStatus: {},
   posts: [],
   postDetail: {},
   matches: {},
@@ -168,6 +169,8 @@ const usePostStore = create((set, get) => ({
   fetchMatches: async (id, force = false) => {
     const key = String(id);
 
+    if (!force && get().matchesStatus[key] === "empty") return;
+
     if (!force && get().matches[key]) {
       return get().matches[key];
     }
@@ -178,13 +181,20 @@ const usePostStore = create((set, get) => ({
 
     try {
       const res = await getPostMatches(id);
+      console.log("fetchMatches raw res:", res); 
+      console.log("fetchMatches res.data:", res?.data);
 
       const data = res?.data || [];
+      const matchStatus = data.length === 0 ? "empty" : "ok";
 
       set({
         matches: {
           ...get().matches,
           [key]: data,
+        },
+        matchesStatus: {
+          ...get().matchesStatus,
+          [key]: matchStatus,
         },
         loadingMatches: null,
       });
@@ -366,13 +376,15 @@ const usePostStore = create((set, get) => ({
 
     try {
       const res = await getRelatedPosts(postId);
-      const status = res?.status ?? "ok";
-      const data = (res?.data ?? []).map((item) => ({
+      const rawData = res?.data ?? [];
+      const data = rawData.map((item) => ({
         ...item.post,
         distance_km: item.distance_km,
         match_percent: item.match_percent,
         score: item.score,
       }));
+
+      const finalStatus = data.length === 0 ? "empty" : "ok";
 
       set((state) => ({
         related: {
@@ -381,7 +393,7 @@ const usePostStore = create((set, get) => ({
         },
         relatedStatus: {
           ...state.relatedStatus,
-          [key]: status,
+          [key]: finalStatus,
         },
         loadingRelated: null,
       }));

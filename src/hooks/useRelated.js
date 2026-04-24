@@ -12,7 +12,7 @@ const useRelated = (postId) => {
     if (!postId) return;
     if (currentStatus === "empty") return; 
     fetchRelated(postId);
-  }, [postId]); 
+  }, [postId, currentStatus]); 
 
   return {
     related: related[key] || [],
