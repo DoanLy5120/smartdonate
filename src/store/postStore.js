@@ -22,6 +22,7 @@ const detailPromises = {};
 
 const usePostStore = create((set, get) => ({
   related: {},
+  relatedStatus: {},
   posts: [],
   postDetail: {},
   matches: {},
@@ -355,24 +356,35 @@ const usePostStore = create((set, get) => ({
     }
   },
 
-  fetchRelated: async (id, force = false) => {
-    const key = String(id);
-    if (!force && get().related[key]) return get().related[key];
+  fetchRelated: async (postId) => {
+    const key = String(postId);
+
     if (get().loadingRelated === key) return;
+    if (get().relatedStatus[key] === "empty") return;
 
     set({ loadingRelated: key });
+
     try {
-      const res = await getRelatedPosts(id);
-      const data = res?.data || [];
-      set({
-        related: { ...get().related, [key]: data },
+      const res = await getRelatedPosts(postId); 
+      const status = res?.data?.status ?? "ok";
+      const data = res?.data?.data ?? [];
+
+      set((state) => ({
+        related: {
+          ...state.related,
+          [key]: data,
+        },
+        relatedStatus: {
+          ...state.relatedStatus,
+          [key]: status,
+        },
         loadingRelated: null,
-      });
-      return data;
-    } catch (err) {
-      console.error("Lỗi fetch related:", err);
-      set({ loadingRelated: null });
-      return [];
+      }));
+    } catch {
+      set((state) => ({
+        relatedStatus: { ...state.relatedStatus, [key]: "empty" },
+        loadingRelated: null,
+      }));
     }
   },
 

@@ -2,16 +2,22 @@ import { useEffect } from "react";
 import usePostStore from "../store/postStore";
 
 const useRelated = (postId) => {
-  const { related, fetchRelated, loadingRelated } = usePostStore();
+  const { related, relatedStatus, fetchRelated, loadingRelated } =
+    usePostStore();
+
+  const key = String(postId);
+  const currentStatus = relatedStatus?.[key]; // "empty" | "ok" | undefined
 
   useEffect(() => {
     if (!postId) return;
+    if (currentStatus === "empty") return; 
     fetchRelated(postId);
-  }, [postId]);
+  }, [postId]); 
 
   return {
-    related: related[String(postId)] || [],
-    loading: loadingRelated === String(postId),
+    related: related[key] || [],
+    status: currentStatus,
+    loading: loadingRelated === key,
   };
 };
 

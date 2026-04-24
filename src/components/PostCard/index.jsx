@@ -42,6 +42,7 @@ export default function PostCard({ post, style, onDelete }) {
   const [reportLoading, setReportLoading] = useState(false);
   const [activePostId, setActivePostId] = useState(null);
   const { fetchPostDetail, postDetail } = usePostStore();
+  const [aiPhase, setAiPhase] = useState("idle");
   const menuRef = useRef(null);
   const { user } = useAuthStore();
   const hasAiSuggestions = post.aiSuggestions?.length > 0;
@@ -111,6 +112,24 @@ export default function PostCard({ post, style, onDelete }) {
   const quantityLabel = isCho ? "Còn tặng" : "Còn cần";
 
   const isStatusDone = (status) => status === "DA_TANG" || status === "DA_NHAN";
+
+  useEffect(() => {
+    if (!hasAiSuggestions) return;
+
+    // Dùng 1 timer duy nhất, không setstate sync
+    const timer = setTimeout(() => {
+      setAiPhase("loading");
+    }, 0);
+
+    const timer2 = setTimeout(() => {
+      setAiPhase("done");
+    }, 1500);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(timer2);
+    };
+  }, [post.id]); 
 
   useEffect(() => {
     if (activePostId && activePostId !== post.id) {
@@ -521,9 +540,17 @@ export default function PostCard({ post, style, onDelete }) {
           </div>
         </div>
 
-        {/* AI Suggestions */}
-        {hasAiSuggestions && (
-          <div className="post-card__ai-box">
+        {/* AI loading spinner */}
+        {hasAiSuggestions && aiPhase === "loading" && (
+          <div className="post-card__ai-loading">
+            <span className="post-card__ai-spinner" />
+            <span className="post-card__ai-loading-text">
+              AI đang phân tích...
+            </span>
+          </div>
+        )}
+        {hasAiSuggestions && aiPhase === "done" && (
+          <div className="post-card__ai-box post-card__ai-box--animate">
             <div className="post-card__ai-box-header">
               <div className="post-card__ai-box-title">
                 <div className="post-card__ai-robot-icon">

@@ -669,6 +669,49 @@
   }
 }
 
+// AI Loading
+.post-card__ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  color: #888;
+  font-size: 12.5px;
+}
+
+.post-card__ai-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: ai-spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Fade + slide up khi hiện
+.post-card__ai-box--animate {
+  animation: ai-fade-in 0.4s ease both;
+}
+
+@keyframes ai-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ════════════════════════════════════════
    EDIT MODAL — redesigned
 ════════════════════════════════════════ */
