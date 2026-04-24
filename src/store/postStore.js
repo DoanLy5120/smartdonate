@@ -359,15 +359,20 @@ const usePostStore = create((set, get) => ({
   fetchRelated: async (postId) => {
     const key = String(postId);
 
-    if (get().loadingRelated === key) return;
     if (get().relatedStatus[key] === "empty") return;
+    if (get().loadingRelated === key) return;
 
     set({ loadingRelated: key });
 
     try {
-      const res = await getRelatedPosts(postId); 
-      const status = res?.data?.status ?? "ok";
-      const data = res?.data?.data ?? [];
+      const res = await getRelatedPosts(postId);
+      const status = res?.status ?? "ok";
+      const data = (res?.data ?? []).map((item) => ({
+        ...item.post,
+        distance_km: item.distance_km,
+        match_percent: item.match_percent,
+        score: item.score,
+      }));
 
       set((state) => ({
         related: {
