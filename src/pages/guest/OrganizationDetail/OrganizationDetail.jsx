@@ -252,110 +252,32 @@ export default function OrganizationDetail() {
             </>
           )}
 
-          {/* ── Tab: Sao kê ── */}
           {activeTab === "saoke" && (
             <div className="od-saoke">
-              {/* Tổng quan */}
-              <div className="od-sk-summary">
-                <div className="od-sk-stat">
-                  <span className="od-sk-stat__label">Tổng thu</span>
-                  <span className="od-sk-stat__value is-green">
-                    {formatVnd(ORG.tong_thu)}
-                  </span>
-                </div>
-                <div className="od-sk-stat">
-                  <span className="od-sk-stat__label">Tổng chi</span>
-                  <span className="od-sk-stat__value is-red">
-                    {formatVnd(ORG.tong_chi)}
-                  </span>
-                </div>
-                <div className="od-sk-stat">
-                  <span className="od-sk-stat__label">Số dư còn lại</span>
-                  <span className="od-sk-stat__value">
-                    {formatVnd(ORG.so_du_hien_tai)}
-                  </span>
-                </div>
-              </div>
+              {/* ===== Breakdown ===== */}
+              <div className="od-sk-expense-list">
+                {(ORG.expense_summary || []).map((item, i) => {
+                  const amount = Number(item.tong_tien);
 
-              {/* Chi theo chiến dịch */}
-              <div className="od-sk-section-title">Chi theo chiến dịch</div>
-              <div className="od-sk-breakdown">
-                {(ORG.bao_cao_chi || []).map((report, i) => (
-                  <div key={i} className="od-sk-report-block">
-                    <div className="od-sk-report-block__header">
-                      <img
-                        src={report.hinh_anh}
-                        alt={report.ten_chien_dich}
-                        className="od-sk-report-block__thumb"
-                      />
-                      <div className="od-sk-report-block__meta">
-                        <span className="od-sk-report-block__name">
-                          {report.ten_chien_dich}
-                        </span>
-                        <span className="od-sk-report-block__total">
-                          Tổng chi:{" "}
-                          <strong>{formatVnd(report.tong_chi)}</strong>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="od-sk-report-block__items">
-                      {report.cac_khoan_chi.map((item, j) => (
-                        <div key={j} className="od-sk-report-item">
-                          <div className="od-sk-report-item__left">
-                            <span className="od-sk-report-item__dot" />
-                            <span className="od-sk-report-item__label">
-                              {item.hang_muc}
-                            </span>
-                          </div>
-                          <div className="od-sk-report-item__right">
-                            <span className="od-sk-report-item__amount">
-                              {formatVnd(item.so_tien)}
-                            </span>
-                            {item.ghi_chu && (
-                              <span className="od-sk-report-item__note">
-                                {item.ghi_chu}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Lịch sử giao dịch */}
-              <div className="od-sk-section-title">
-                Lịch sử giao dịch gần đây
-              </div>
-              <div className="od-sk-transactions">
-                {(ORG.lich_su_giao_dich || []).map((tx, i) => (
-                  <div key={i} className="od-sk-tx">
+                  return (
                     <div
-                      className={`od-sk-tx__icon ${tx.loai === "CHI" ? "is-out" : "is-in"}`}
+                      key={i}
+                      className="od-sk-expense-item"
+                      style={{ animationDelay: `${i * 0.05}s` }}
                     >
-                      {tx.loai === "CHI" ? (
-                        <FiArrowUpRight size={16} />
-                      ) : (
-                        <FiArrowDownRight size={16} />
-                      )}
-                    </div>
-                    <div className="od-sk-tx__info">
-                      <div className="od-sk-tx__name">{tx.mo_ta}</div>
-                      <div className="od-sk-tx__meta">
-                        <span>{tx.ngay}</span>
-                        <span>·</span>
-                        <span>{tx.chien_dich}</span>
+                      <div className="od-sk-expense-left">
+                        <span className="od-sk-expense-dot" />
+                        <span className="od-sk-expense-name">
+                          {item.ten_hoat_dong}
+                        </span>
+                      </div>
+
+                      <div className="od-sk-expense-right">
+                        {formatVnd(amount)}
                       </div>
                     </div>
-                    <span
-                      className={`od-sk-tx__amount ${tx.loai === "CHI" ? "is-out" : "is-in"}`}
-                    >
-                      {tx.loai === "CHI" ? "−" : "+"}
-                      {formatVnd(tx.so_tien)}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
