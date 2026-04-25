@@ -1,13 +1,12 @@
 import { create } from "zustand";
 import { getCategories } from "../api/campaignService";
 
-let categoriesPromise = null; 
+let categoriesPromise = null;
 
 const useCategoryStore = create((set, get) => ({
   categories: [],
   selectedCategory: null,
   loading: false,
-
   isFetchedCategories: false,
 
   fetchCategories: async () => {
@@ -27,7 +26,7 @@ const useCategoryStore = create((set, get) => ({
       set({
         categories: res,
         loading: false,
-        isFetchedCategories: true, 
+        isFetchedCategories: true,
       });
     } catch (err) {
       console.error("Lỗi fetch categories:", err);

@@ -925,8 +925,8 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: none;
     background: rgba(0, 0, 0, 0.22);
@@ -947,10 +947,10 @@
     }
 
     &--prev {
-      left: -16px;
+      left: -20px;
     }
     &--next {
-      right: -16px;
+      right: -27px;
     }
   }
 }

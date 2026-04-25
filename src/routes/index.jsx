@@ -64,7 +64,7 @@ const publicRoutes = [
     ),
   },
   {
-    path: "/tim-kiem",
+    path: "/chien-dich/tim-kiem",
     element: (
       <PublicRoute>
         <Search />
