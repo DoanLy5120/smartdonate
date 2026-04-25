@@ -196,15 +196,6 @@ export default function SearchPage() {
     <>
       <Header />
       <div className="sp-page">
-        {/* ── Hero search header ── */}
-        {keyword && (
-          <div className="sp-hero">
-            <div className="sp-hero__inner">
-              <p className="sp-hero__label">Kết quả tìm kiếm</p>
-              <h1 className="sp-hero__keyword">"{keyword}"</h1>
-            </div>
-          </div>
-        )}
 
         {/* ── Tabs ── */}
         <div className="sp-tabs">

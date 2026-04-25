@@ -698,7 +698,7 @@ export default function PostCard({ post, style, onDelete }) {
                       <div className="post-card__ai-item-loc">
                         <FiMapPin size={10} /> {r.dia_diem || "Không rõ"}
                         {r.distance_km != null && (
-                          <span className="post-card__ai-item-dist">
+                          <span className="post-card__ai-item-score">
                             · {r.distance_km.toFixed(1)} km
                           </span>
                         )}

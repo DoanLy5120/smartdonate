@@ -70,35 +70,6 @@ $tag-text: #f0592b;
   background: $bg;
 }
 
-// ── Hero ─────────────────────────────────────────────────────────────
-.sp-hero {
-  background: $white;
-  border-bottom: 1px solid $border;
-  padding: 10px 24px 10px;
-
-  &__inner {
-    max-width: 1300px;
-    display: flex;
-    margin: 0 auto;
-  }
-
-  &__label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: $text-light;
-    margin: 0 10px 6px;
-  }
-
-  &__keyword {
-    font-size: 20px;
-    font-weight: 700;
-    color: #f0592b;
-    margin: 0;
-  }
-}
-
 // ── Tabs ─────────────────────────────────────────────────────────────
 .sp-tabs {
   background: $white;
