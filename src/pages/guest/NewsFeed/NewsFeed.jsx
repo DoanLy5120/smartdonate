@@ -19,7 +19,6 @@ import "./NewsFeed.scss";
 export default function NewsFeed() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("cho");
-  const [search, setSearch] = useState("");
   const user = useAuthStore((s) => s.user);
   const [showAddressModal, setShowAddressModal] = useState(
     () => !!(user?.id && shouldShowAddressPrompt(user.id)),
@@ -27,7 +26,6 @@ export default function NewsFeed() {
 
   const fetchMatches = usePostStore((s) => s.fetchMatches);
   const matchesMap = usePostStore((s) => s.matches);
-  const fetchSearch = usePostStore((s) => s.fetchSearch);
   const myUserId = useAuthStore((s) => Number(s.user?.id || 0));
   const isLoggedIn = !!user;
 
@@ -39,10 +37,9 @@ export default function NewsFeed() {
 
   const params = useMemo(
     () => ({
-      loai_bai: tab.toUpperCase(),
-      keyword: search || undefined,
+      loai_bai: tab.toUpperCase()
     }),
-    [tab, search],
+    [tab],
   );
 
   const { posts, loading, hasMore, loadMore } = usePosts(params);
@@ -155,27 +152,11 @@ export default function NewsFeed() {
                     <FiPackage size={15} /> NHẬN ĐỒ
                   </button>
                 </div>
-                <Input
-                  className="nf-toolbar__search"
-                  placeholder="Tìm kiếm vật dụng..."
-                  prefix={<FiSearch size={15} />}
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    if (e.target.value.trim().length >= 2) {
-                      fetchSearch({
-                        keyword: e.target.value.trim(),
-                        loai_bai: tab.toUpperCase(),
-                      });
-                    }
-                  }}
-                  allowClear
-                />
                 <button
                   className="nf-toolbar__post-btn"
                   onClick={() => navigate("/bang-tin/tao-moi")}
                 >
-                  <FiPlus size={20} /> Đăng
+                  <FiPlus size={20} /> Đăng bài ngay
                 </button>
               </div>
 
