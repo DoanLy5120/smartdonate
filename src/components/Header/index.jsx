@@ -13,12 +13,16 @@ import "./styles.scss";
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState(""); // từ file 1
   const totalUnread = useChatStore((s) => s.totalUnread);
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const { user, token } = useAuthStore();
   const isLoggedIn = !!token;
   const logoutStore = useAuthStore((state) => state.logout);
+  const roles = useAuthStore((s) => s.roles); // từ file 2
+  const isOrg = Array.isArray(roles) // từ file 2
+    ? roles.some((r) => r === "TO_CHUC" || r?.ten === "TO_CHUC")
+    : false;
 
   const navbar = [
     {
@@ -66,7 +70,6 @@ export default function Header() {
 
   const getActiveKey = () => {
     const path = location.pathname;
-
     for (const item of navbar) {
       if (item.children) {
         const foundChild = item.children.find(
@@ -74,18 +77,19 @@ export default function Header() {
         );
         if (foundChild) return [foundChild.key];
       }
-
       if (path === item.key || path.startsWith(item.key + "/")) {
         return [item.key];
       }
     }
-
     return [];
   };
 
+  // từ file 1 — search có navigate
   const handleSearch = (value) => {
     if (!value.trim()) return;
-    navigate(`/chien-dich/tim-kiem?keyword=${encodeURIComponent(value.trim())}`);
+    navigate(
+      `/chien-dich/tim-kiem?keyword=${encodeURIComponent(value.trim())}`,
+    );
   };
 
   const handleLogout = async () => {
@@ -106,11 +110,22 @@ export default function Header() {
     }
   };
 
+  // từ file 2 — items có navigate profile + thống kê tổ chức
   const items = [
     {
       key: "profile",
       label: "Thông tin cá nhân",
+      onClick: () => navigate("/profile"),
     },
+    ...(isOrg
+      ? [
+          {
+            key: "thong-ke",
+            label: "Thống kê tổ chức",
+            onClick: () => navigate("/thong-ke"),
+          },
+        ]
+      : []),
     {
       key: "logout",
       label: "Đăng xuất",
@@ -125,6 +140,7 @@ export default function Header() {
           <img src={logo} alt="logo" className="app-header__logoImg" />
         </span>
 
+        {/* từ file 1 — search có state + onPressEnter + onClick */}
         <div className="app-header__search">
           <Input
             placeholder="Tìm kiếm chiến dịch..."
@@ -195,7 +211,7 @@ export default function Header() {
           )}
         </div>
       </div>
-      {/* Modal đăng nhập */}
+
       <RequiredLoginModal
         openLoginModal={openLoginModal}
         setOpenLoginModal={setOpenLoginModal}
