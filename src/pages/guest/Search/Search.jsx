@@ -11,13 +11,16 @@ import {
   FiUser,
   FiFileText,
   FiHeart,
+  FiMapPin,
 } from "react-icons/fi";
+import { FaGift, FaInbox } from "react-icons/fa";
 import Header from "../../../components/Header/index";
 import Footer from "../../../components/Footer/index";
 import CampaignCard from "../../../components/CampaignCard/index.jsx";
 import PostCard from "../../../components/PostCard/index.jsx";
 import useCampaignStore from "../../../store/campaignStore.js";
 import useCategoryStore from "../../../store/categoryStore.js";
+import usePostStore from "../../../store/postStore.js";
 import "./Search.scss";
 
 const TABS = [
@@ -36,43 +39,13 @@ const STATUS_OPTIONS = [
 
 const PAGE_SIZE = 8;
 
-// ── Mock data (thay bằng API thật sau) ───────────────────────────────
-const MOCK_POSTS = Array.from({ length: 10 }, (_, i) => ({
-  id: i + 1,
-  title: `Bài viết số ${i + 1}`,
-  content: "Nội dung bài viết...",
-  created_at: new Date().toISOString(),
-}));
-
-const MOCK_USERS = Array.from({ length: 9 }, (_, i) => ({
-  id: i + 1,
-  ho_ten: `Người dùng ${i + 1}`,
-  avatar: null,
-  email: `user${i + 1}@example.com`,
-  chien_dich_count: Math.floor(Math.random() * 10),
-}));
-
-// ── Async mock fetchers ───────────────────────────────────────────────
-async function fetchMockPosts(keyword) {
-  await new Promise((r) => setTimeout(r, 400));
-  return keyword
-    ? MOCK_POSTS.filter((p) => p.title.includes(keyword))
-    : MOCK_POSTS;
-}
-
-async function fetchMockUsers(keyword) {
-  await new Promise((r) => setTimeout(r, 400));
-  return keyword
-    ? MOCK_USERS.filter((u) => u.ho_ten.includes(keyword))
-    : MOCK_USERS;
-}
-
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const keyword = searchParams.get("keyword") ?? "";
 
   const { campaigns, pagination, loading, fetchCampaigns } = useCampaignStore();
+  const { fetchSearch, fetchSearchUsers, searchLoading } = usePostStore();
   const { categories, fetchCategories } = useCategoryStore();
 
   const [activeTab, setActiveTab] = useState("campaigns");
@@ -80,7 +53,7 @@ export default function SearchPage() {
   const [trangThai, setTrangThai] = useState(null);
   const [page, setPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false);
-
+  const [postType, setPostType] = useState("CHO");
   const [posts, setPosts] = useState([]);
   const [users, setUsers] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
@@ -107,8 +80,28 @@ export default function SearchPage() {
     (async () => {
       setLoadingPosts(true);
       try {
-        const data = await fetchMockPosts(keyword);
-        if (!cancelled) setPosts(data);
+        const raw = await fetchSearch({
+          q: keyword,
+          type: "post",
+          loai_bai: postType,
+        });
+        const mapped = (raw || []).map((p) => ({
+          ...p,
+          title: p.tieu_de,
+          desc: p.mo_ta,
+          location: p.dia_diem,
+          time: p.created_at,
+          user: {
+            id: p.nguoi_dung?.id,
+            name: p.nguoi_dung?.ho_ten ?? "Người dùng",
+            avatar: p.nguoi_dung?.ho_ten?.charAt(0)?.toUpperCase() ?? "?",
+            avatar_url: p.nguoi_dung?.avatar_url ?? null,
+            color: "#1890ff",
+          },
+          images: p.hinh_anh_urls || [],
+          liked: p.da_thich ?? false,
+        }));
+        if (!cancelled) setPosts(mapped);
       } finally {
         if (!cancelled) setLoadingPosts(false);
       }
@@ -116,7 +109,7 @@ export default function SearchPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeTab, keyword]);
+  }, [activeTab, keyword, postType]);
 
   useEffect(() => {
     if (activeTab !== "users") return;
@@ -124,7 +117,7 @@ export default function SearchPage() {
     (async () => {
       setLoadingUsers(true);
       try {
-        const data = await fetchMockUsers(keyword);
+        const data = await fetchSearchUsers({ q: keyword });
         if (!cancelled) setUsers(data);
       } finally {
         if (!cancelled) setLoadingUsers(false);
@@ -185,18 +178,12 @@ export default function SearchPage() {
     },
   ].filter(Boolean);
 
-  const isLoadingCurrent =
-    activeTab === "campaigns"
-      ? loading
-      : activeTab === "posts"
-        ? loadingPosts
-        : loadingUsers;
+  const isLoadingCurrent = activeTab === "campaigns" ? loading : loadingUsers;
 
   return (
     <>
       <Header />
       <div className="sp-page">
-
         {/* ── Tabs ── */}
         <div className="sp-tabs">
           <div className="sp-tabs__inner">
@@ -354,22 +341,74 @@ export default function SearchPage() {
                   <EmptyState keyword={keyword} onClear={clearAll} />
                 ))}
 
-              {activeTab === "posts" &&
-                (posts.length > 0 ? (
-                  <div className="sp-posts">
-                    {posts.map((p, i) => (
-                      <div
-                        key={p.id}
-                        className="sp-posts__item"
-                        style={{ animationDelay: `${i * 0.06}s` }}
-                      >
-                        <PostCard post={p} />
-                      </div>
-                    ))}
+              {activeTab === "posts" && (
+                <div className="sp-posts-layout">
+                  {/* ── Sidebar ── */}
+                  <div className="sp-posts-sidebar">
+                    <div className="sp-posts-sidebar__title">Loại bài</div>
+
+                    <button
+                      className={`sp-posts-sidebar__btn${postType === "CHO" ? " active" : ""}`}
+                      onClick={() => setPostType("CHO")}
+                    >
+                      <span className="sp-posts-sidebar__icon">
+                        <FaGift size={14} />
+                      </span>
+                      <span className="sp-posts-sidebar__label">Cho tặng</span>
+                      {postType === "CHO" && (
+                        <span className="sp-posts-sidebar__count">
+                          {posts.length}
+                        </span>
+                      )}
+                    </button>
+
+                    <div className="sp-posts-sidebar__sep" />
+
+                    <button
+                      className={`sp-posts-sidebar__btn${postType === "NHAN" ? " active" : ""}`}
+                      onClick={() => setPostType("NHAN")}
+                    >
+                      <span className="sp-posts-sidebar__icon">
+                        <FaInbox size={14} />
+                      </span>
+                      <span className="sp-posts-sidebar__label">Cần nhận</span>
+                      {postType === "NHAN" && (
+                        <span className="sp-posts-sidebar__count">
+                          {posts.length}
+                        </span>
+                      )}
+                    </button>
                   </div>
-                ) : (
-                  <EmptyState keyword={keyword} label="bài viết" />
-                ))}
+
+                  {/* ── Content ── */}
+                  <div className="sp-posts-content">
+                    {loadingPosts ? (
+                      <div className="sp-skeleton-grid">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="sp-skeleton sp-skeleton--card"
+                          />
+                        ))}
+                      </div>
+                    ) : posts.length > 0 ? (
+                      <div className="sp-posts">
+                        {posts.map((p, i) => (
+                          <div
+                            key={p.id}
+                            className="sp-posts__item"
+                            style={{ animationDelay: `${i * 0.06}s` }}
+                          >
+                            <PostCard post={p} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState keyword={keyword} label="bài viết" />
+                    )}
+                  </div>
+                </div>
+              )}
 
               {activeTab === "users" &&
                 (users.length > 0 ? (
@@ -382,23 +421,33 @@ export default function SearchPage() {
                         onClick={() => navigate(`/nguoi-dung/${u.id}`)}
                       >
                         <div className="sp-users__avatar">
-                          {u.avatar ? (
-                            <img src={u.avatar} alt={u.ho_ten} />
+                          {u.anh_dai_dien ? (
+                            <img src={u.anh_dai_dien} alt={u.ho_ten} />
                           ) : (
                             <span>{u.ho_ten?.[0]?.toUpperCase()}</span>
                           )}
                         </div>
                         <div className="sp-users__info">
                           <div className="sp-users__name">{u.ho_ten}</div>
-                          <div className="sp-users__meta">{u.email}</div>
+                          <div className="sp-users__desc">
+                            <div className="sp-users__username">
+                              @{u.ten_tai_khoan}
+                            </div>
+                            {u.dia_chi && (
+                              <div className="sp-users__meta">
+                                <FiMapPin size={11} />
+                                {u.dia_chi}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="sp-users__stat">
-                          <span className="sp-users__stat-num">
-                            {u.chien_dich_count}
-                          </span>
-                          <span className="sp-users__stat-label">
-                            chiến dịch
-                          </span>
+                        <div
+                          className={`sp-users__status sp-users__status--${u.trang_thai === "HOAT_DONG" ? "active" : "inactive"}`}
+                        >
+                          <span className="sp-users__status-dot" />
+                          {u.trang_thai === "HOAT_DONG"
+                            ? "Hoạt động"
+                            : "Không hoạt động"}
                         </div>
                       </div>
                     ))}

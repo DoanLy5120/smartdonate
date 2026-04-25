@@ -78,6 +78,12 @@ export const searchPosts = async (params = {}) => {
   return res.data;
 };
 
+// Thêm sau searchPosts
+export const searchUsers = async (params = {}) => {
+  const res = await api.get(`/posts/search`, { params: { ...params, type: 'people' } });
+  return res.data;
+};
+
 // ===== RELATED (bài gần vị trí) =====
 export const getRelatedPosts = async (id) => {
   const res = await api.get(`/posts/${id}/related`);

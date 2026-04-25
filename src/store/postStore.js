@@ -14,6 +14,7 @@ import {
   searchPosts,
   getRelatedPosts,
   getCommunityStats,
+  searchUsers,
 } from "../api/postService";
 
 let currentPage = 1;
@@ -398,7 +399,7 @@ const usePostStore = create((set, get) => ({
           [key]: data.length ? "ok" : "empty",
         },
       }));
-    } catch{
+    } catch {
       set((state) => ({
         relatedStatus: {
           ...state.relatedStatus,
@@ -417,6 +418,20 @@ const usePostStore = create((set, get) => ({
       return data;
     } catch (err) {
       console.error("Lỗi search:", err);
+      set({ searchLoading: false });
+      return [];
+    }
+  },
+
+  fetchSearchUsers: async (params = {}) => {
+    set({ searchLoading: true });
+    try {
+      const res = await searchUsers({ ...params, type: "people" });
+      const data = res?.data || [];
+      set({ searchResults: data, searchLoading: false });
+      return data;
+    } catch (err) {
+      console.error("Lỗi search users:", err);
       set({ searchLoading: false });
       return [];
     }
