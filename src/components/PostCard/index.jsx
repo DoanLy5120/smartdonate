@@ -400,9 +400,9 @@ export default function PostCard({ post, style, onDelete }) {
               if (uid) navigate(`/bang-tin/nguoi-dung/${uid}`);
             }}
           >
-            {post.user.avatar_url ? (
+            {post.avatar_url ? (
               <img
-                src={post.user.avatar_url}
+                src={post.avatar_url}
                 alt=""
                 style={{
                   width: "100%",

@@ -158,6 +158,10 @@ export default function PostDetailModal({ post, visible, onClose }) {
                 id: fetchedPost.nguoi_dung?.id,
                 name: fetchedPost.nguoi_dung?.ho_ten,
                 avatar: fetchedPost.nguoi_dung?.ho_ten?.charAt(0) || "?",
+                avatar_url:
+                  p.nguoi_dung?.anh_dai_dien ||
+                  p.nguoi_dung?.avatar_url ||
+                  null,
                 color: "#1890ff",
               },
               location: fetchedPost.dia_diem,
@@ -316,7 +320,28 @@ export default function PostDetailModal({ post, visible, onClose }) {
                 className="pdc__avatar"
                 style={{ background: displayPost.user.color }}
               >
-                {displayPost.user.avatar}
+                {displayPost.user.avatar_url ? (
+                  <img
+                    src={getAvatar(displayPost.user.avatar_url)}
+                    alt="avatar"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      color: "#fff",
+                      fontWeight: 600,
+                      fontSize: 16,
+                    }}
+                  >
+                    {displayPost.user.avatar}
+                  </span>
+                )}
               </div>
               <div className="pdc__user-info">
                 <div className="pdc__username">{displayPost.user.name}</div>
