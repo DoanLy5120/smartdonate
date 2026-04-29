@@ -9,6 +9,13 @@ import useAuthStore from "../../../store/authStore";
 import echo from "../../../socket.js";
 import "./Chat.scss";
 
+// Thêm hàm này cạnh toMediaUrl
+const fixAvatarUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http://")) return url.replace("http://", "https://");
+  return url;
+};
+
 export default function ChatPage() {
   const toMediaUrl = (path) => {
     if (!path) return "";
@@ -92,7 +99,6 @@ export default function ChatPage() {
       if (selectedFilePreviewUrl) URL.revokeObjectURL(selectedFilePreviewUrl);
     };
   }, [selectedFilePreviewUrl]);
-
 
   useEffect(() => {
     if (!activeChatId) {
@@ -279,9 +285,9 @@ export default function ChatPage() {
                 >
                   {/* Avatar */}
                   <div className="chat-conv__avatar">
-                    {conv.nguoi_kia?.avatar_url ? (
+                    {fixAvatarUrl(conv.nguoi_kia?.avatar_url) ? (
                       <img
-                        src={conv.nguoi_kia.avatar_url}
+                        src={fixAvatarUrl(conv.nguoi_kia.avatar_url)}
                         alt={conv.nguoi_kia.ho_ten}
                         style={{
                           width: "100%",
@@ -393,10 +399,17 @@ export default function ChatPage() {
                 >
                   ←
                 </button>
-                <div className="chat-main__user">
-                  {activeChat?.nguoi_kia?.avatar_url ? (
+                <div
+                  className="chat-main__user"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const uid = activeChat?.nguoi_kia?.id;
+                    if (uid) navigate(`/bang-tin/nguoi-dung/${uid}`);
+                  }}
+                >
+                  {fixAvatarUrl(activeChat?.nguoi_kia?.avatar_url) ? (
                     <img
-                      src={activeChat.nguoi_kia.avatar_url}
+                      src={fixAvatarUrl(activeChat.nguoi_kia.avatar_url)}
                       alt={activeChat.nguoi_kia.ho_ten}
                       className="chat-main__avatar"
                     />

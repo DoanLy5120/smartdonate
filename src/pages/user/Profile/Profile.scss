@@ -304,7 +304,7 @@
 .profile-posts {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 4px;
   max-width: 900px;
   margin: 0 auto;
 
@@ -326,7 +326,7 @@
 .profile-posts__action {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   font-size: 16px;
   background: none !important;
   border: none !important;

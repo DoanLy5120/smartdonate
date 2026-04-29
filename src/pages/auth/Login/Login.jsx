@@ -80,11 +80,13 @@ export default function Login() {
 
       setAuth(res.data);
 
-      notification.success({
-        message: "Đăng nhập thành công!",
-      });
-
-      navigate("/bang-tin");
+      const roles = res.data.roles || [];
+      const isAdmin = roles.some(
+        (r) =>
+          r === "ADMIN" || r?.ten === "ADMIN" || r?.ten_vai_tro === "ADMIN",
+      );
+      notification.success({ message: "Đăng nhập thành công!" });
+      navigate(isAdmin ? "/admin" : "/bang-tin");
     } catch (err) {
       notification.error({
         message: "Đăng nhập thất bại!",

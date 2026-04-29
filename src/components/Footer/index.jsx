@@ -13,30 +13,30 @@ export default function Footer() {
 
           <div className="app-footer__col">
             <div className="app-footer__heading">Tổng Quan</div>
-            <a className="app-footer__link" href="#">
+            <a className="app-footer__link" href="/chien-dich">
               Chiến dịch
             </a>
-            <a className="app-footer__link" href="#">
+            <a className="app-footer__link" href="/bang-tin">
               Bảng tin
             </a>
           </div>
 
           <div className="app-footer__col">
             <div className="app-footer__heading">Bản đồ chiến dịch</div>
-            <a className="app-footer__link" href="#">
+            <a className="app-footer__link" href="/ban-do-cd">
               Chiến dịch địa phương
             </a>
           </div>
 
           <div className="app-footer__col">
             <div className="app-footer__heading">Hỗ trợ</div>
-            <a className="app-footer__link" href="#">
+            <a className="app-footer__link" href="/ho-tro/hoi-dap">
               Hỏi đáp
             </a>
-            <a className="app-footer__link" href="#">
+            <a className="app-footer__link" href="/ho-tro/dieu-khoan">
               Điều khoản
             </a>
-            <a className="app-footer__link" href="#">
+            <a className="app-footer__link" href="/ho-tro/chinh-sach">
               Chính sách bảo mật
             </a>
           </div>
