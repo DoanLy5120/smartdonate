@@ -387,6 +387,20 @@ export default function PostCard({ post, style, onDelete }) {
     ...editData.preview.map((url, i) => ({ url, isNew: true, idx: i })),
   ];
 
+  const fixAvatarUrl = (url) => {
+    if (!url) return null;
+
+    // nếu là http thì đổi thành https
+    if (url.startsWith("http://")) {
+      return url.replace("http://", "https://");
+    }
+
+    return url;
+  };
+
+  const avatarUrl = post.user?.avatar_url || post.user?.anh_dai_dien || null;
+  const finalAvatar = fixAvatarUrl(avatarUrl);
+
   return (
     <>
       <div
@@ -395,19 +409,11 @@ export default function PostCard({ post, style, onDelete }) {
       >
         {/* Header */}
         <div className="post-card__header">
-          <div
-            className="post-card__avatar"
-            style={{ background: post.user.color, cursor: "pointer" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              const uid = post.nguoi_dung_id ?? post.user?.id;
-              if (uid) navigate(`/bang-tin/nguoi-dung/${uid}`);
-            }}
-          >
-            {post.user.avatar_url ? (
+          <div className="post-card__avatar" style={{ background: "#1890ff" }}>
+            {finalAvatar  ? (
               <img
-                src={post.user.avatar_url}
-                alt=""
+                src={finalAvatar}
+                alt="avatar"
                 style={{
                   width: "100%",
                   height: "100%",
@@ -416,7 +422,7 @@ export default function PostCard({ post, style, onDelete }) {
                 }}
               />
             ) : (
-              <span style={{ color: "#fff", fontWeight: 600, fontSize: 16 }}>
+              <span style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>
                 {post.user.avatar}
               </span>
             )}
@@ -790,11 +796,11 @@ export default function PostCard({ post, style, onDelete }) {
             <div className="edit-modal__author">
               <div
                 className="edit-modal__author-avatar"
-                style={{ background: post.user.color }}
+                style={{ background: post.user?.color || "#1890ff" }}
               >
-                {post.user.anh_dai_dien ? (
+                {finalAvatar ? (
                   <img
-                    src={post.user.anh_dai_dien}
+                    src={finalAvatar }
                     alt=""
                     style={{
                       width: "100%",

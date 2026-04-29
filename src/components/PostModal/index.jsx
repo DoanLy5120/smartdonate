@@ -38,6 +38,12 @@ const getAvatar = (url) => {
   return url;
 };
 
+const fixAvatarUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http://")) return url.replace("http://", "https://");
+  return url;
+};
+
 function CommentBubble({
   comment,
   onReply,
@@ -103,9 +109,14 @@ function CommentBubble({
 export default function PostDetailModal({ post, visible, onClose }) {
   const { toggleLike, posts } = usePostStore();
   const postFromStore = posts.find((p) => p.id === post?.id);
-  const liked = postFromStore?.liked ?? false;
-  const likeCount = postFromStore?.so_luot_thich ?? 0;
-  const cmtCount = postFromStore?.so_binh_luan ?? 0;
+  const liked = postFromStore?.liked ?? post?.liked ?? false;
+  const likeCount =
+    postFromStore?.so_luot_thich ?? post?.likeCount ?? post?.so_luot_thich ?? 0;
+  const cmtCount =
+    postFromStore?.so_binh_luan ??
+    post?.commentCount ??
+    post?.so_binh_luan ??
+    0;
   const [activePostId, setActivePostId] = useState(null);
   const { fetchPostDetail, postDetail } = usePostStore();
   const [commentText, setCommentText] = useState("");
@@ -320,28 +331,31 @@ export default function PostDetailModal({ post, visible, onClose }) {
                 className="pdc__avatar"
                 style={{ background: displayPost.user.color }}
               >
-                {displayPost.user.avatar_url ? (
-                  <img
-                    src={getAvatar(displayPost.user.avatar_url)}
-                    alt="avatar"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "50%",
-                    }}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      color: "#fff",
-                      fontWeight: 600,
-                      fontSize: 16,
-                    }}
-                  >
-                    {displayPost.user.avatar}
-                  </span>
-                )}
+                {(() => {
+                  const rawUrl =
+                    displayPost.user?.avatar_url ||
+                    displayPost.user?.anh_dai_dien ||
+                    null;
+                  const finalAvatar = fixAvatarUrl(getAvatar(rawUrl));
+                  return finalAvatar ? (
+                    <img
+                      src={finalAvatar}
+                      alt="avatar"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  ) : (
+                    <span
+                      style={{ color: "#fff", fontWeight: 600, fontSize: 16 }}
+                    >
+                      {displayPost.user.avatar}
+                    </span>
+                  );
+                })()}
               </div>
               <div className="pdc__user-info">
                 <div className="pdc__username">{displayPost.user.name}</div>
