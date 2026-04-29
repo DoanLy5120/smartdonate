@@ -192,6 +192,10 @@ export default function PostCard({ post, style, onDelete }) {
                 id: fetchedPost.nguoi_dung?.id,
                 name: fetchedPost.nguoi_dung?.ho_ten,
                 avatar: fetchedPost.nguoi_dung?.ho_ten?.charAt(0) || "?",
+                avatar_url:
+                  fetchedPost.nguoi_dung?.anh_dai_dien ||
+                  fetchedPost.nguoi_dung?.avatar_url ||
+                  null,
                 color: "#1890ff",
               },
               location: fetchedPost.dia_diem,
@@ -400,9 +404,9 @@ export default function PostCard({ post, style, onDelete }) {
               if (uid) navigate(`/bang-tin/nguoi-dung/${uid}`);
             }}
           >
-            {post.avatar_url ? (
+            {post.user.avatar_url ? (
               <img
-                src={post.avatar_url}
+                src={post.user.avatar_url}
                 alt=""
                 style={{
                   width: "100%",
