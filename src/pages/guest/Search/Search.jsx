@@ -418,7 +418,7 @@ export default function SearchPage() {
                         key={u.id}
                         className="sp-users__card"
                         style={{ animationDelay: `${i * 0.05}s` }}
-                        onClick={() => navigate(`/nguoi-dung/${u.id}`)}
+                        onClick={() => navigate(`/bang-tin/nguoi-dung/${u.id}`)}
                       >
                         <div className="sp-users__avatar">
                           {u.anh_dai_dien ? (
