@@ -12,10 +12,20 @@ export default function useCampaigns({ params = null, featured = false } = {}) {
   const featuredList = useCampaignStore((s) => s.featured);
   const loading = useCampaignStore((s) => s.loading);
   const loadingCreate = useCampaignStore((s) => s.loadingCreate);
+  const loadingUpdate = useCampaignStore((s) => s.loadingUpdate);
+  const loadingExpense = useCampaignStore((s) => s.loadingExpense);
   const fetchCampaigns = useCampaignStore((s) => s.fetchCampaigns);
   const fetchFeatured = useCampaignStore((s) => s.fetchFeatured);
-  const fetchEndingCampaigns = useCampaignStore((s) => s.fetchEndingCampaigns)
+  const fetchEndingCampaigns = useCampaignStore((s) => s.fetchEndingCampaigns);
   const createCampaign = useCampaignStore((s) => s.createCampaign);
+
+  // Edit + expense actions
+  const fetchCampaignForEdit = useCampaignStore((s) => s.fetchCampaignForEdit);
+  const handleUpdateCampaign = useCampaignStore((s) => s.handleUpdateCampaign);
+  const fetchWithdrawTransactions = useCampaignStore(
+    (s) => s.fetchWithdrawTransactions,
+  );
+  const handleCreateExpense = useCampaignStore((s) => s.handleCreateExpense);
 
   const paramsKey = params ? JSON.stringify(params) : null;
   const prevParamsKey = useRef(null);
@@ -29,8 +39,8 @@ export default function useCampaigns({ params = null, featured = false } = {}) {
   }, []);
 
   useEffect(() => {
-    if (paramsKey === null) return; 
-    if (paramsKey === prevParamsKey.current) return; 
+    if (paramsKey === null) return;
+    if (paramsKey === prevParamsKey.current) return;
     prevParamsKey.current = paramsKey;
     fetchCampaigns(params);
   }, [paramsKey]);
@@ -40,9 +50,16 @@ export default function useCampaigns({ params = null, featured = false } = {}) {
     pagination,
     featured: featuredList,
     loading,
-    loadingCreate, 
-    fetchCampaigns, 
+    loadingCreate,
+    loadingUpdate,
+    loadingExpense,
+    fetchCampaigns,
     fetchFeatured,
-    createCampaign, 
+    createCampaign,
+    // Edit + expense
+    fetchCampaignForEdit,
+    handleUpdateCampaign,
+    fetchWithdrawTransactions,
+    handleCreateExpense,
   };
 }

@@ -5,6 +5,10 @@ import {
   getCampaignDetail,
   getEndingCampaigns,
   createCampaign,
+  getCampaignForEdit,
+  updateCampaign,
+  getWithdrawTransactions,
+  createExpense,
 } from "../api/campaignService";
 
 let featuredPromise = null;
@@ -21,6 +25,8 @@ const useCampaignStore = create((set, get) => ({
   isFetchedFeatured: false,
   isFetchedEnding: false,
   loadingCreate: false,
+  loadingUpdate: false,
+  loadingExpense: false,
 
   fetchCampaigns: async (params = {}) => {
     set({ loading: true });
@@ -82,7 +88,7 @@ const useCampaignStore = create((set, get) => ({
         set({
           campaignDetail: {
             ...get().campaignDetail,
-            [key]: res, // 👈 cache theo page
+            [key]: res,
           },
         });
 
@@ -159,6 +165,71 @@ const useCampaignStore = create((set, get) => ({
       }, {});
 
     set({ campaignDetail: filtered });
+  },
+
+  // ─────────── EDIT CAMPAIGN ───────────
+
+  // Lấy data chiến dịch để hiện trong modal edit (luôn fetch fresh)
+  fetchCampaignForEdit: async (id) => {
+    try {
+      const data = await getCampaignForEdit(id);
+      return { ok: true, data };
+    } catch (err) {
+      console.error("Lỗi fetch campaign for edit:", err);
+      return { ok: false, err };
+    }
+  },
+
+  // Cập nhật chiến dịch
+  handleUpdateCampaign: async (id, formData) => {
+    if (get().loadingUpdate) return { ok: false };
+    set({ loadingUpdate: true });
+    try {
+      const res = await updateCampaign(id, formData);
+      // Invalidate cache detail của chiến dịch này
+      get().invalidateCampaignDetail(id);
+      set({
+        loadingUpdate: false,
+        // Force refetch list khi quay lại trang campaigns
+        isFetchedFeatured: false,
+        isFetchedEnding: false,
+      });
+      return { ok: true, data: res };
+    } catch (err) {
+      console.error("Lỗi update campaign:", err);
+      set({ loadingUpdate: false });
+      return { ok: false, err };
+    }
+  },
+
+  // ─────────── EXPENSE / WITHDRAW ───────────
+
+  // Lấy danh sách giao dịch RÚT của chiến dịch (để chọn trong modal Hoạt động chi quỹ)
+  fetchWithdrawTransactions: async (campaignId) => {
+    try {
+      const res = await getWithdrawTransactions(campaignId);
+      return { ok: true, data: res?.data || [] };
+    } catch (err) {
+      console.error("Lỗi fetch withdraw transactions:", err);
+      return { ok: false, err, data: [] };
+    }
+  },
+
+  // Khai báo hoạt động chi quỹ
+  handleCreateExpense: async (campaignId, payload) => {
+    if (get().loadingExpense) return { ok: false };
+    set({ loadingExpense: true });
+    try {
+      const res = await createExpense(campaignId, payload);
+      // Invalidate cache detail vì chi_tieu_theo_dot đã thay đổi
+      get().invalidateCampaignDetail(campaignId);
+      set({ loadingExpense: false });
+      return { ok: true, data: res };
+    } catch (err) {
+      console.error("Lỗi tạo expense:", err);
+      set({ loadingExpense: false });
+      return { ok: false, err };
+    }
   },
 }));
 

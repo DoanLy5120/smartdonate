@@ -13,15 +13,26 @@ import "./styles.scss";
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchValue, setSearchValue] = useState(""); // từ file 1
+  const [searchValue, setSearchValue] = useState("");
   const totalUnread = useChatStore((s) => s.totalUnread);
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const { user, token } = useAuthStore();
   const isLoggedIn = !!token;
   const logoutStore = useAuthStore((state) => state.logout);
-  const roles = useAuthStore((s) => s.roles); // từ file 2
-  const isOrg = Array.isArray(roles) // từ file 2
-    ? roles.some((r) => r === "TO_CHUC" || r?.ten === "TO_CHUC")
+  const roles = useAuthStore((s) => s.roles);
+  const isOrg = Array.isArray(roles)
+    ? roles.some(
+        (r) =>
+          r === "TO_CHUC" ||
+          r?.ten === "TO_CHUC" ||
+          r?.ten_vai_tro === "TO_CHUC",
+      )
+    : false;
+  const isAdmin = Array.isArray(roles)
+    ? roles.some(
+        (r) =>
+          r === "ADMIN" || r?.ten === "ADMIN" || r?.ten_vai_tro === "ADMIN",
+      )
     : false;
 
   const navbar = [
@@ -84,7 +95,6 @@ export default function Header() {
     return [];
   };
 
-  // từ file 1 — search có navigate
   const handleSearch = (value) => {
     if (!value.trim()) return;
     navigate(
@@ -110,28 +120,40 @@ export default function Header() {
     }
   };
 
-  // từ file 2 — items có navigate profile + thống kê tổ chức
-  const items = [
-    {
-      key: "profile",
-      label: "Thông tin cá nhân",
-      onClick: () => navigate("/profile"),
-    },
-    ...(isOrg
-      ? [
-          {
-            key: "thong-ke",
-            label: "Thống kê tổ chức",
-            onClick: () => navigate("/thong-ke"),
-          },
-        ]
-      : []),
-    {
-      key: "logout",
-      label: "Đăng xuất",
-      onClick: handleLogout,
-    },
-  ];
+  const items = isAdmin
+    ? [
+        {
+          key: "dashboard",
+          label: "Trang quản trị",
+          onClick: () => navigate("/admin"),
+        },
+        {
+          key: "logout",
+          label: "Đăng xuất",
+          onClick: handleLogout,
+        },
+      ]
+    : [
+        {
+          key: "profile",
+          label: "Thông tin cá nhân",
+          onClick: () => navigate("/profile"),
+        },
+        ...(isOrg
+          ? [
+              {
+                key: "thong-ke",
+                label: "Thống kê tổ chức",
+                onClick: () => navigate("/thong-ke"),
+              },
+            ]
+          : []),
+        {
+          key: "logout",
+          label: "Đăng xuất",
+          onClick: handleLogout,
+        },
+      ];
 
   return (
     <header className="app-header full-bleed">
@@ -140,7 +162,6 @@ export default function Header() {
           <img src={logo} alt="logo" className="app-header__logoImg" />
         </span>
 
-        {/* từ file 1 — search có state + onPressEnter + onClick */}
         <div className="app-header__search">
           <Input
             placeholder="Tìm kiếm chiến dịch..."
@@ -184,8 +205,9 @@ export default function Header() {
               </button>
               <Dropdown menu={{ items }}>
                 <div className="app-header__user">
-                  <Avatar size={34}>
-                    {user?.ho_ten?.[0]?.toUpperCase() || "U"}
+                  <Avatar size={34} src={user?.anh_dai_dien || undefined}>
+                    {!user?.anh_dai_dien &&
+                      (user?.ho_ten?.[0]?.toUpperCase() || "U")}
                   </Avatar>
                   <div className="app-header__userText">
                     <div className="app-header__userName">{user?.ho_ten}</div>

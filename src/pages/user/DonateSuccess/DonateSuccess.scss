@@ -285,6 +285,16 @@
   animation: ds-fadeIn 0.4s ease 0.25s both;
 }
 
+.ds-fail{
+  padding: 20px 24px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .ds-btn {
   height: 46px;
   border-radius: 12px;

@@ -1,17 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  FiMenu,
-  FiX,
-  FiBell,
-  FiSearch,
-  FiLogOut,
-  FiChevronRight,
-  FiGrid,
-  FiUsers,
-  FiFolder,
-  FiFileText,
+  FiMenu, FiX, FiBell, FiSearch, FiLogOut,
+  FiChevronRight, FiGrid, FiUsers, FiFolder, FiFileText, FiHome,
 } from "react-icons/fi";
+import useAuthStore from "../../../store/authStore";
+import { logoutAPI } from "../../../api/authService";
 import Dashboard from "../Dashboard/Dashboard";
 import Users from "../Users/Users";
 import Projects from "../Projects/Projects";
@@ -22,63 +16,55 @@ const NAV_ITEMS = [
   {
     section: "Tổng quan",
     items: [
-      {
-        key: "dashboard",
-        icon: <FiGrid size={20} />,
-        label: "Dashboard",
-        path: "/admin/dashboard",
-      },
+      { key: "dashboard", icon: <FiGrid size={20} />, label: "Dashboard", path: "/admin/dashboard" },
     ],
   },
   {
     section: "Quản lý",
     items: [
-      { key: "users", icon: <FiUsers size={20} />, label: "Người dùng", path: "/admin/users" },
-      {
-        key: "projects",
-        icon: <FiFolder size={20} />,
-        label: "Chiến dịch",
-        path: "/admin/projects",
-        badge: 4,
-      },
-      {
-        key: "posts",
-        icon: <FiFileText size={20} />,
-        label: "Bài đăng",
-        path: "/admin/posts",
-        badge: 6,
-      },
+      { key: "users",    icon: <FiUsers size={20} />,    label: "Người dùng", path: "/admin/users" },
+      { key: "projects", icon: <FiFolder size={20} />,   label: "Chiến dịch", path: "/admin/projects" },
+      { key: "posts",    icon: <FiFileText size={20} />, label: "Bài đăng",   path: "/admin/posts" },
     ],
   },
 ];
 
-const COMPONENTS = {
-  dashboard: Dashboard,
-  users: Users,
-  projects: Projects,
-  posts: Posts,
-};
+const COMPONENTS = { dashboard: Dashboard, users: Users, projects: Projects, posts: Posts };
 
 export default function AdminPanel() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const FLAT_NAV = NAV_ITEMS.flatMap((section) => section.items);
+  const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarRef = useRef(null);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const { user, logout: logoutStore } = useAuthStore();
 
-  const currentKey = location.pathname.split("/")[2] || "dashboard";
-
-  const activeKey = currentKey;
-
-  const activeLabel =
-    FLAT_NAV.find((item) => item.key === activeKey)?.label || "Dashboard";
-
+  const FLAT_NAV    = NAV_ITEMS.flatMap((s) => s.items);
+  const currentKey  = location.pathname.split("/")[2] || "dashboard";
+  const activeKey   = currentKey;
+  const activeLabel = FLAT_NAV.find((i) => i.key === activeKey)?.label || "Dashboard";
   const CurrentComponent = COMPONENTS[activeKey] || Dashboard;
+  const displayName = user?.ho_ten || "Admin";
 
   useEffect(() => {
-    if (location.pathname === "/admin") {
-      navigate("/admin/dashboard", { replace: true });
-    }
+    if (location.pathname === "/admin") navigate("/admin/dashboard", { replace: true });
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function handleLogout() {
+    try { await logoutAPI(); } catch (_) {}
+    logoutStore();
+    window.location.href = "/dang-nhap";
+  }
 
   function handleNav(path) {
     navigate(path);
@@ -87,35 +73,26 @@ export default function AdminPanel() {
 
   return (
     <div className="adm">
-      {/* Overlay mobile */}
-      {sidebarOpen && (
-        <div className="adm__overlay" onClick={() => setSidebarOpen(false)} />
-      )}
+      {sidebarOpen && <div className="adm__overlay" onClick={() => setSidebarOpen(false)} />}
 
       {/* ── Sidebar ── */}
       <aside className={`adm__sidebar${sidebarOpen ? " open" : ""}`}>
-        {/* Logo */}
         <div className="adm__logo">
           <div className="adm__logo-icon">🎯</div>
           <div>
             <div className="adm__logo-name">SmartDonate</div>
             <div className="adm__logo-sub">Admin Panel</div>
           </div>
-          <button
-            className="adm__logo-close"
-            onClick={() => setSidebarOpen(false)}
-          >
+          <button className="adm__logo-close" onClick={() => setSidebarOpen(false)}>
             <FiX size={18} />
           </button>
         </div>
 
-        {/* Nav */}
         <nav className="adm__nav">
           <div className="adm__nav-label">MENU CHÍNH</div>
           {NAV_ITEMS.map((section) => (
             <div key={section.section}>
               <div className="adm__nav-label">{section.section}</div>
-
               {section.items.map((item) => (
                 <button
                   key={item.key}
@@ -124,29 +101,21 @@ export default function AdminPanel() {
                 >
                   <span className="adm__nav-icon">{item.icon}</span>
                   <span className="adm__nav-label-text">{item.label}</span>
-
-                  {item.badge && (
-                    <span className="adm__nav-badge">{item.badge}</span>
-                  )}
-
-                  {activeKey === item.key && (
-                    <FiChevronRight size={13} className="adm__nav-arrow" />
-                  )}
+                  {activeKey === item.key && <FiChevronRight size={13} className="adm__nav-arrow" />}
                 </button>
               ))}
             </div>
           ))}
         </nav>
 
-        {/* Footer */}
         <div className="adm__sidebar-footer">
           <div className="adm__user">
-            <div className="adm__user-avatar">A</div>
+            <div className="adm__user-avatar">{displayName[0]?.toUpperCase()}</div>
             <div className="adm__user-info">
-              <div className="adm__user-name">Admin</div>
+              <div className="adm__user-name">{displayName}</div>
               <div className="adm__user-role">Super Admin</div>
             </div>
-            <button className="adm__user-logout" title="Đăng xuất">
+            <button className="adm__user-logout" title="Đăng xuất" onClick={handleLogout}>
               <FiLogOut size={15} />
             </button>
           </div>
@@ -155,12 +124,8 @@ export default function AdminPanel() {
 
       {/* ── Main ── */}
       <div className="adm__main">
-        {/* Header */}
         <header className="adm__header">
-          <button
-            className="adm__header-menu"
-            onClick={() => setSidebarOpen(true)}
-          >
+          <button className="adm__header-menu" onClick={() => setSidebarOpen(true)}>
             <FiMenu size={20} />
           </button>
 
@@ -180,11 +145,39 @@ export default function AdminPanel() {
               <FiBell size={18} />
               <span className="adm__header-notif" />
             </button>
-            <div className="adm__header-avatar">A</div>
+
+            {/* Avatar dropdown */}
+            <div className="adm__avatar-wrap" ref={avatarRef}>
+              <div
+                className="adm__header-avatar"
+                onClick={() => setAvatarMenuOpen((v) => !v)}
+                style={{ cursor: "pointer" }}
+              >
+                {displayName[0]?.toUpperCase()}
+              </div>
+              {avatarMenuOpen && (
+                <div className="adm__avatar-menu">
+                  <div className="adm__avatar-menu__name">{displayName}</div>
+                  <div className="adm__avatar-menu__role">Super Admin</div>
+                  <div className="adm__avatar-menu__divider" />
+                  <button
+                    className="adm__avatar-menu__item"
+                    onClick={() => { setAvatarMenuOpen(false); navigate("/"); }}
+                  >
+                    <FiHome size={14} /> Về trang chủ
+                  </button>
+                  <button
+                    className="adm__avatar-menu__item adm__avatar-menu__item--danger"
+                    onClick={handleLogout}
+                  >
+                    <FiLogOut size={14} /> Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
-        {/* Content */}
         <main className="adm__content">
           <CurrentComponent />
         </main>

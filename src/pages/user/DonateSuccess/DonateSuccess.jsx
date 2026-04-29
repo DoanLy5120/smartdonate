@@ -133,7 +133,7 @@ export default function DonateSuccess() {
               Giao dịch không thành công hoặc đã bị huỷ
             </div>
           </div>
-          <div className="ds-actions" style={{ padding: "24px" }}>
+          <div className="ds-fail" style={{ padding: "24px" }}>
             <button
               className="ds-btn ds-btn--outline"
               onClick={() => {

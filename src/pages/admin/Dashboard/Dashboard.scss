@@ -86,11 +86,22 @@
     font-size: 13px;
     color: #333;
     line-height: 1.5;
+
+    strong {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+  }
+
+  &__act-detail {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
   }
 
   &__act-time {
     font-size: 11.5px;
-    color: #333;
+    color: #999;
     margin-top: 2px;
   }
 
@@ -127,9 +138,15 @@
     text-overflow: ellipsis;
   }
 
+  &__camp-org {
+    font-size: 12px;
+    color: #666;
+    margin-top: 1px;
+  }
+
   &__camp-meta {
     font-size: 12px;
-    color: #333;
+    color: #999;
     margin-top: 2px;
   }
 
@@ -167,4 +184,24 @@
     min-width: 34px;
     text-align: right;
   }
+}
+
+// Spin animation cho refresh button
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Year badge
+.adm-box__year {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 6px;
 }
