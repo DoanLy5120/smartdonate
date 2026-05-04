@@ -1768,11 +1768,11 @@ function ChangePasswordModal({ profileUser, onChangePassword, onClose }) {
     }
     setLoading(true);
     const payload = isGoogleUser
-      ? { new_password: form.new, new_password_confirmation: form.confirm }
+      ? { new_password: form.new, confirm_password: form.confirm, }
       : {
           current_password: form.old,
           new_password: form.new,
-          new_password_confirmation: form.confirm,
+          confirm_password: form.confirm,
         };
     const { ok, err } = await onChangePassword(payload);
     setLoading(false);
