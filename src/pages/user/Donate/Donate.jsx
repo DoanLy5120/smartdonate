@@ -288,7 +288,7 @@ export default function DonatePage() {
                   <FiMessageSquare size={16} className="dp-field__icon" />
                   <input
                     className="dp-field__input"
-                    placeholder="Lời nhắn hoặc để trống dùng mã tự động"
+                    placeholder="Vui lòng nhập mã chuyển khoản của chiến dịch"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                   />
