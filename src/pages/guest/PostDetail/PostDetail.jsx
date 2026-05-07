@@ -95,7 +95,7 @@ export default function PostDetail() {
         }}
       >
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/bang-tin")}
           style={{
             display: "flex",
             alignItems: "center",
