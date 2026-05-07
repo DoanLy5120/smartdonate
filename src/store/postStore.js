@@ -181,8 +181,6 @@ const usePostStore = create((set, get) => ({
 
     try {
       const res = await getPostMatches(id);
-      console.log("fetchMatches raw res:", res);
-      console.log("fetchMatches res.data:", res?.data);
 
       const data = res?.data || [];
       const matchStatus = data.length === 0 ? "empty" : "ok";

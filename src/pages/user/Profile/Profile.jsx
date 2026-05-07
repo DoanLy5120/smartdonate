@@ -11,8 +11,10 @@ import Header from "../../../components/Header/index.jsx";
 import Footer from "../../../components/Footer/index.jsx";
 import PostCard from "../../../components/PostCard";
 import "./Profile.scss";
+import useWithdrawRequestStore from "../../../store/withdrawRequestStore";
 
 export default function ProfilePage() {
+  const sentinelRef = useRef(null);
   const { user } = useAuthStore();
   const storeRoles = useAuthStore((s) => s.roles);
   const navigate = useNavigate();
@@ -21,6 +23,11 @@ export default function ProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [withdrawModal, setWithdrawModal] = useState(null); // campaign object
+  const [withdrawForm, setWithdrawForm] = useState({ so_tien: "", mo_ta: "" });
+  const [rawWithdrawAmount, setRawWithdrawAmount] = useState("");
+  const { createRequest, submitting: submittingWithdraw } =
+    useWithdrawRequestStore();
   const [expenseModalCampaign, setExpenseModalCampaign] = useState(null);
   const [editModalCampaign, setEditModalCampaign] = useState(null);
 
@@ -30,8 +37,20 @@ export default function ProfilePage() {
     myPosts,
     myCampaigns,
     loading,
+    loadingDonations,
+    loadingPosts,
+    donationsHasMore,
+    postsHasMore,
+    loadMoreDonations,
+    loadMorePosts,
+    loadingCampaigns,
+    campaignsHasMore,
+    loadMoreCampaigns,
     handleUpdateProfile,
     handleChangePassword,
+    donationsTotal,
+    postsTotal,
+    campaignsTotal,
   } = useProfile();
 
   const isOrganization = Array.isArray(storeRoles)
@@ -64,6 +83,83 @@ export default function ProfilePage() {
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
   }, [openMenuId]);
+
+  // Infinite scroll for posts and donations tabs
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        if (activeTab === "posts" && postsHasMore && !loadingPosts)
+          loadMorePosts();
+        if (activeTab === "history" && donationsHasMore && !loadingDonations)
+          loadMoreDonations();
+        if (activeTab === "projects" && campaignsHasMore && !loadingCampaigns)
+          loadMoreCampaigns();
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [
+    activeTab,
+    postsHasMore,
+    loadingPosts,
+    loadMorePosts,
+    donationsHasMore,
+    loadingDonations,
+    loadMoreDonations,
+    campaignsHasMore,
+    loadingCampaigns,
+    loadMoreCampaigns,
+  ]);
+
+  const handleWithdrawRequest = (campaign, e) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    setWithdrawForm({ so_tien: "", mo_ta: "" });
+    setRawWithdrawAmount("");
+    setWithdrawModal(campaign);
+  };
+
+  const handleWithdrawSubmit = async () => {
+    const amount = Number(withdrawForm.so_tien);
+    if (!amount || amount < 100000) {
+      notification.warning({
+        message: "Số tiền tối thiểu 100.000đ!",
+        placement: "topRight",
+      });
+      return;
+    }
+    if (!withdrawForm.mo_ta.trim()) {
+      notification.warning({
+        message: "Vui lòng nhập lý do rút!",
+        placement: "topRight",
+      });
+      return;
+    }
+    const { ok, err } = await createRequest({
+      chien_dich_id: withdrawModal.id,
+      so_tien: String(amount),
+      mo_ta: withdrawForm.mo_ta,
+    });
+    if (ok) {
+      notification.success({
+        message: "Gửi yêu cầu rút tiền thành công!",
+        placement: "topRight",
+      });
+      setWithdrawModal(null);
+    } else {
+      notification.error({
+        message: "Gửi yêu cầu thất bại",
+        description: err?.response?.data?.message || err?.message,
+        placement: "topRight",
+      });
+    }
+  };
 
   const handleEditCampaign = (campaign, e) => {
     e.stopPropagation();
@@ -200,10 +296,8 @@ export default function ProfilePage() {
                 {isOrganization && toChuc?.ten_to_chuc && (
                   <p className="profile-info__org">{toChuc.ten_to_chuc}</p>
                 )}
-                {!isOrganization && profileUser?.dia_chi && (
-                  <p className="profile-info__address">
-                    📍 {profileUser.dia_chi}
-                  </p>
+                {profileUser?.dia_chi && (
+                  <p className="profile-info__address">{profileUser.dia_chi}</p>
                 )}
               </div>
             </div>
@@ -332,14 +426,12 @@ export default function ProfilePage() {
           <div className="profile-stats__sep" />
           <div className="profile-stats__item">
             <span>Bài đăng</span>
-            <strong>{myPosts.length} bài</strong>
+            <strong>{postsTotal} bài</strong>
           </div>
           <div className="profile-stats__sep" />
           <div className="profile-stats__item">
             <span>{isOrganization ? "Chiến dịch" : "Lịch sử ủng hộ"}</span>
-            <strong>
-              {isOrganization ? myCampaigns?.length || 0 : donations.length}
-            </strong>
+            <strong>{isOrganization ? campaignsTotal : donationsTotal}</strong>
           </div>
         </div>
 
@@ -375,7 +467,7 @@ export default function ProfilePage() {
                   Lịch sử ủng hộ
                 </h3>
                 <span className="dh-header__total">
-                  {donations.length} lần ủng hộ
+                  {donationsTotal} lần ủng hộ
                 </span>
               </div>
               {donations.length === 0 ? (
@@ -386,13 +478,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="dh-timeline">
                   {donations.map((item, i) => (
-                    <div
-                      key={item.id || i}
-                      className="dh-card"
-                      onClick={() =>
-                        navigate(`/chien-dich/chi-tiet/${item.chien_dich_id}`)
-                      }
-                    >
+                    <div key={item.id || i} className="dh-card">
                       <div className="dh-card__cover">
                         <img
                           src={item.anh || item.chien_dich?.anh_bia || banner}
@@ -481,6 +567,18 @@ export default function ProfilePage() {
                   ))}
                 </div>
               )}
+              {donationsHasMore && (
+                <div
+                  ref={sentinelRef}
+                  style={{
+                    textAlign: "center",
+                    padding: "16px",
+                    color: "var(--color-text-tertiary)",
+                  }}
+                >
+                  {loadingDonations ? "Đang tải..." : ""}
+                </div>
+              )}
             </div>
           )}
 
@@ -515,6 +613,18 @@ export default function ProfilePage() {
                   <p className="profile-empty__hint">
                     Tạo bài đăng cho/nhận đồ để AI gợi ý ghép nối người phù hợp
                   </p>
+                </div>
+              )}
+              {postsHasMore && (
+                <div
+                  ref={sentinelRef}
+                  style={{
+                    textAlign: "center",
+                    padding: "16px",
+                    color: "var(--color-text-tertiary)",
+                  }}
+                >
+                  {loadingPosts ? "Đang tải..." : ""}
                 </div>
               )}
             </div>
@@ -586,7 +696,6 @@ export default function ProfilePage() {
                       <div
                         key={c.id}
                         className="pcd-card"
-                        onClick={() => navigate(`/chien-dich/chi-tiet/${c.id}`)}
                       >
                         <div className="pcd-card__cover">
                           {c.hinh_anh ? (
@@ -650,6 +759,19 @@ export default function ProfilePage() {
                                       </span>
                                     )}
                                   </button>
+                                  {c.trang_thai === "HOAT_DONG" && (
+                                    <button
+                                      className="pcd-card__menu-item pcd-card__menu-item--withdraw"
+                                      onClick={(e) =>
+                                        handleWithdrawRequest(c, e)
+                                      }
+                                    >
+                                      <span className="pcd-card__menu-icon">
+                                        💸
+                                      </span>
+                                      Yêu cầu rút tiền
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -735,8 +857,104 @@ export default function ProfilePage() {
                       </div>
                     );
                   })}
+                  {campaignsHasMore && (
+                    <div
+                      ref={sentinelRef}
+                      style={{
+                        textAlign: "center",
+                        padding: "16px",
+                        color: "var(--color-text-tertiary)",
+                      }}
+                    >
+                      {loadingCampaigns ? "Đang tải..." : ""}
+                    </div>
+                  )}
                 </div>
               )}
+            </div>
+          )}
+          {/* ── Modal Yêu cầu rút tiền ── */}
+          {withdrawModal && (
+            <div className="wr-overlay" onClick={() => setWithdrawModal(null)}>
+              <div className="wr-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="wr-modal__header">
+                  <div>
+                    <div className="wr-modal__title">💸 Yêu cầu rút tiền</div>
+                    <div className="wr-modal__sub">
+                      {withdrawModal.ten_chien_dich}
+                    </div>
+                  </div>
+                  <button
+                    className="wr-modal__close"
+                    onClick={() => setWithdrawModal(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="wr-modal__body">
+                  <div className="wr-modal__field">
+                    <label className="wr-modal__label">
+                      Số tiền muốn rút *
+                    </label>
+                    <div className="wr-modal__input-wrap">
+                      <input
+                        className="wr-modal__input"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={
+                          rawWithdrawAmount
+                            ? Number(rawWithdrawAmount).toLocaleString("vi-VN")
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, "");
+                          setRawWithdrawAmount(raw);
+                          setWithdrawForm((f) => ({ ...f, so_tien: raw }));
+                        }}
+                      />
+                      <span className="wr-modal__suffix">đ</span>
+                    </div>
+                    {rawWithdrawAmount &&
+                      Number(rawWithdrawAmount) >= 100000 && (
+                        <div className="wr-modal__hint">
+                          = {Number(rawWithdrawAmount).toLocaleString("vi-VN")}đ
+                        </div>
+                      )}
+                  </div>
+                  <div className="wr-modal__field">
+                    <label className="wr-modal__label">Lý do rút tiền *</label>
+                    <textarea
+                      className="wr-modal__textarea"
+                      placeholder="Mô tả mục đích sử dụng số tiền (chi phí hoạt động, mua vật tư...)"
+                      value={withdrawForm.mo_ta}
+                      onChange={(e) =>
+                        setWithdrawForm((f) => ({
+                          ...f,
+                          mo_ta: e.target.value,
+                        }))
+                      }
+                      rows={3}
+                      maxLength={500}
+                    />
+                  </div>
+                </div>
+                <div className="wr-modal__footer">
+                  <button
+                    className="wr-modal__btn wr-modal__btn--ghost"
+                    onClick={() => setWithdrawModal(null)}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    className="wr-modal__btn wr-modal__btn--primary"
+                    onClick={handleWithdrawSubmit}
+                    disabled={submittingWithdraw}
+                  >
+                    {submittingWithdraw ? "Đang gửi..." : "Gửi yêu cầu"}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -1185,10 +1403,15 @@ function EditCampaignModal({ campaign, onClose, onSuccess }) {
 
 /* ===================== Modal: Hoạt động chi quỹ ===================== */
 function ExpenseActivityModal({ campaign, toChuc, onClose, onSuccess }) {
-  const { fetchWithdrawTransactions, handleCreateExpense, loadingExpense } =
-    useCampaigns();
+  const {
+    fetchWithdrawTransactions,
+    fetchWithdrawWithExpenses,
+    handleCreateExpense,
+    loadingExpense,
+  } = useCampaigns();
 
   const [withdrawList, setWithdrawList] = useState([]);
+  const [expenseMap, setExpenseMap] = useState({}); // giao_dich_id → { mo_ta, chi_tieu[] }
   const [fetching, setFetching] = useState(true);
   const [selectedId, setSelectedId] = useState("");
   const [ghiChu, setGhiChu] = useState("");
@@ -1197,22 +1420,68 @@ function ExpenseActivityModal({ campaign, toChuc, onClose, onSuccess }) {
     { ten: "", so_tien: "" },
   ]);
 
-  // Lấy danh sách giao dịch RÚT qua hook
+  // Lấy danh sách giao dịch RÚT + chi tiêu đã khai báo
   useEffect(() => {
     (async () => {
-      const { ok, data, err } = await fetchWithdrawTransactions(campaign.id);
-      if (!ok) {
+      // Gọi cả 2 API song song
+      const [txRes, expRes] = await Promise.all([
+        fetchWithdrawTransactions(campaign.id),
+        fetchWithdrawWithExpenses(campaign.id),
+      ]);
+
+      if (!txRes.ok) {
         notification.error({
           message: "Không tải được danh sách giao dịch rút",
-          description: err?.response?.data?.message || err?.message,
+          description: txRes.err?.response?.data?.message || txRes.err?.message,
           placement: "topRight",
         });
       }
-      setWithdrawList(data || []);
-      if (data?.length > 0) setSelectedId(String(data[0].id));
+
+      const list = txRes.data || [];
+      setWithdrawList(list);
+
+      // Build expenseMap: { giao_dich_id → { mo_ta, chi_tieu[] } }
+      const map = {};
+      (expRes.data || []).forEach((gd) => {
+        map[String(gd.giao_dich_id)] = {
+          mo_ta: gd.mo_ta || "",
+          chi_tieu: Array.isArray(gd.chi_tieu) ? gd.chi_tieu : [],
+        };
+      });
+      setExpenseMap(map);
+
+      // Auto-select giao dịch đầu tiên + load chi tiêu
+      if (list.length > 0) {
+        const firstId = String(list[0].id);
+        setSelectedId(firstId);
+        loadExpenseForId(firstId, map);
+      }
+
       setFetching(false);
     })();
   }, [campaign.id]);
+
+  // Load chi tiêu đã có vào form khi chọn giao dịch
+  const loadExpenseForId = (id, map) => {
+    const existing = (map || expenseMap)[String(id)];
+    if (existing?.chi_tieu?.length > 0) {
+      setGhiChu(existing.mo_ta || "");
+      setItems(
+        existing.chi_tieu.map((ct) => ({
+          ten: ct.ten_hoat_dong || "",
+          so_tien: String(ct.so_tien || ""),
+          id: ct.chi_tieu_id, // giữ id nếu cần update sau này
+        })),
+      );
+    } else {
+      // Chưa có chi tiêu → reset về 2 ô trống
+      setGhiChu("");
+      setItems([
+        { ten: "", so_tien: "" },
+        { ten: "", so_tien: "" },
+      ]);
+    }
+  };
 
   const selectedWithdraw = withdrawList.find(
     (w) => String(w.id) === selectedId,
@@ -1339,7 +1608,10 @@ function ExpenseActivityModal({ campaign, toChuc, onClose, onSuccess }) {
                 </label>
                 <select
                   value={selectedId}
-                  onChange={(e) => setSelectedId(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedId(e.target.value);
+                    loadExpenseForId(e.target.value, null);
+                  }}
                 >
                   {withdrawList.map((w) => (
                     <option key={w.id} value={w.id}>
@@ -1620,7 +1892,9 @@ function EditProfileModal({
                   {logoPreview ? (
                     <img src={logoPreview} alt="logo" />
                   ) : (
-                    <span>{(toChuc?.ten_to_chuc || "T")[0]?.toUpperCase()}</span>
+                    <span>
+                      {(toChuc?.ten_to_chuc || "T")[0]?.toUpperCase()}
+                    </span>
                   )}
                 </div>
                 <div className="ep-avatar-actions">
@@ -1649,7 +1923,14 @@ function EditProfileModal({
                     Xóa
                   </button>
                 </div>
-                <div style={{ flex: 1, fontSize: 12, color: "#888", marginLeft: 16 }}>
+                <div
+                  style={{
+                    flex: 1,
+                    fontSize: 12,
+                    color: "#888",
+                    marginLeft: 16,
+                  }}
+                >
                   Logo tổ chức (jpg/png, tối đa 2MB)
                 </div>
               </div>
@@ -1768,11 +2049,11 @@ function ChangePasswordModal({ profileUser, onChangePassword, onClose }) {
     }
     setLoading(true);
     const payload = isGoogleUser
-      ? { new_password: form.new, new_password_confirmation: form.confirm }
+      ? { new_password: form.new, confirm_password: form.confirm }
       : {
           current_password: form.old,
           new_password: form.new,
-          new_password_confirmation: form.confirm,
+          confirm_password: form.confirm,
         };
     const { ok, err } = await onChangePassword(payload);
     setLoading(false);
@@ -1888,7 +2169,7 @@ function ChangePasswordModal({ profileUser, onChangePassword, onClose }) {
                   name={f.name}
                   value={form[f.name]}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  autoComplete="new-password"
                   style={{ paddingRight: 40 }}
                 />
                 <button

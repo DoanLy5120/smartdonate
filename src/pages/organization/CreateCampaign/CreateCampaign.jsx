@@ -121,7 +121,7 @@ export default function CreateCampaign() {
     try {
       await createCampaign(formData);
       notification.success({
-        message: "Tạo chiến dịch thành công! 🎉",
+        message: "Tạo chiến dịch thành công! ",
         description: "Chiến dịch đang chờ admin xét duyệt.",
       });
       navigate("/chien-dich");
@@ -150,7 +150,6 @@ export default function CreateCampaign() {
       <div className="cc-page__header">
         <div className="cc-page__title-wrap">
           <span className="cc-page__title">Tạo Chiến Dịch Từ Thiện</span>
-          <span className="cc-page__title-icon">✨</span>
         </div>
         <p className="cc-page__subtitle">
           Chia sẻ yêu thương — Lan tỏa giá trị nhân văn đến cộng đồng

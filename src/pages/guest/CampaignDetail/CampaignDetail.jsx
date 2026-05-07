@@ -400,7 +400,7 @@ export default function CampaignDetail() {
       case "TAM_DUNG":
         return "Tạm dừng";
       default:
-        return "Không xác định";
+        return "Chờ duyệt";
     }
   };
 

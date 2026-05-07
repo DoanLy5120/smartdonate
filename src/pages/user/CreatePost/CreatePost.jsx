@@ -55,7 +55,7 @@ export default function CreatePost() {
     formData.append("mo_ta", desc);
     formData.append("loai_bai", type === "cho" ? "CHO" : "NHAN");
     formData.append("dia_diem", location);
-    formData.append("so_luong", quantity === "" ? 1 : Number(quantity)); 
+    formData.append("so_luong", quantity === "" ? 1 : Number(quantity));
 
     images.forEach((img) => {
       if (img.file) formData.append("hinh_anh[]", img.file);
@@ -99,7 +99,7 @@ export default function CreatePost() {
   }
 
   return (
-    <div className="cp-overlay">
+    <div className="cp-page">
       <div className="cp-modal">
         <div className="cp-modal__header">
           <div className="cp-modal__title">
@@ -282,7 +282,7 @@ export default function CreatePost() {
                 className="cp-field-inline__input"
                 placeholder="Nhập số lượng..."
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value)} 
+                onChange={(e) => setQuantity(e.target.value)}
                 type="number"
                 min={1}
               />

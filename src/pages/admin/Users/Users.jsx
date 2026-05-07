@@ -254,7 +254,6 @@ export default function Users() {
         <div className="adm-box__head">
           <span className="adm-box__title">
             <FiUser size={15} /> Danh sách tài khoản
-            <span className="adm-box__badge">{visibleUsers.length}</span>
           </span>
           <div className="adm-box__actions">
             <div className="usr__search">
@@ -438,11 +437,13 @@ export default function Users() {
           )}
         </div>
 
-        <Pagination
-          meta={usersMeta}
-          loading={loadingUsers}
-          onChange={(page) => fetchUsers({ page })}
-        />
+        {filter !== "pending" && (
+          <Pagination
+            meta={usersMeta}
+            loading={loadingUsers}
+            onChange={(page) => fetchUsers({ page })}
+          />
+        )}
       </div>
 
       {selected && (

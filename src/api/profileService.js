@@ -26,22 +26,28 @@ export const updateDiaChi = async (dia_chi) => {
   return res.data;
 };
 
-// GET /donate/history
-export const getDonateHistory = async () => {
-  const res = await api.get("/donate/history");
-  return res.data;
+// GET /donate/history — BE trả { data: paginator }
+export const getDonateHistory = async (page = 1, perPage = 6) => {
+  const res = await api.get("/donate/history", {
+    params: { page, per_page: perPage },
+  });
+  return res.data; // { data: { data: [...], next_page_url, ... } }
 };
 
-// GET /posts/me — bài đăng của chính mình (đúng route BE)
-export const getMyPosts = async () => {
-  const res = await api.get("/posts/me");
-  return res.data;
+// GET /posts/me — BE trả { data: paginator }
+export const getMyPosts = async (page = 1, perPage = 12) => {
+  const res = await api.get("/posts/me", {
+    params: { page, per_page: perPage },
+  });
+  return res.data; // { data: { data: [...], next_page_url, ... } }
 };
 
-// GET /campaigns/me — chiến dịch của tổ chức
-export const getMyCampaigns = async () => {
-  const res = await api.get("/campaigns/me");
-  return res.data;
+// GET /campaigns/me — BE trả paginator trực tiếp (không bọc { data: })
+export const getMyCampaigns = async (page = 1, perPage = 8) => {
+  const res = await api.get("/campaigns/me", {
+    params: { page, per_page: perPage },
+  });
+  return res.data; // { data: [...], next_page_url, ... }
 };
 
 // GET /profile/:id — xem profile người khác

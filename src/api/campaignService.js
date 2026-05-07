@@ -3,7 +3,7 @@ import api from "./authService";
 // Danh sách campaign — nhận mọi params: keyword, danh_muc_id, sort, page
 export const getCampaigns = async (params = {}) => {
   const res = await api.get(`/campaigns`, { params });
-  return res.data;
+  return res.data; 
 };
 
 // Campaign nổi bật
@@ -27,7 +27,7 @@ export const getCategories = async () => {
 // Sắp kết thúc
 export const getEndingCampaigns = async () => {
   const res = await api.get("/campaigns/ending-soon");
-  return res.data;
+  return res.data; 
 };
 
 // Tạo chiến dịch — gửi FormData vì có file ảnh
@@ -60,6 +60,12 @@ export const updateCampaign = async (id, formData) => {
 // GET /campaigns/{id}/withdraw-transactions — danh sách giao dịch RÚT của chiến dịch
 export const getWithdrawTransactions = async (campaignId) => {
   const res = await api.get(`/campaigns/${campaignId}/withdraw-transactions`);
+  return res.data;
+};
+
+// GET /campaigns/{id}/withdraw-expenses — giao dịch rút + chi tiêu đã khai báo
+export const getWithdrawWithExpenses = async (campaignId) => {
+  const res = await api.get(`/campaigns/${campaignId}/withdraw-expenses`);
   return res.data;
 };
 

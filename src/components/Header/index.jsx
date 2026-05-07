@@ -219,9 +219,9 @@ export default function Header() {
             <div className="app-header__auth">
               <button
                 className="app-header__btn app-header__btn--orange"
-                onClick={() => setOpenLoginModal(true)}
+                onClick={() => navigate("/dang-ky")}
               >
-                Tạo chiến dịch
+                Đăng ký
               </button>
               <button
                 className="app-header__btn app-header__btn--green"

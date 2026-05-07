@@ -70,10 +70,8 @@ export const getAdminPostReports = async (params = { limit: 100 }) => {
 };
 
 // trang_thai: CHO_XU_LY | DA_XU_LY | TU_CHOI
-export const updateAdminPostReport = async (id, trang_thai) => {
-  const res = await api.post(`/admin/post-reports/${id}`, { trang_thai });
-  return res.data;
-};
+export const updateAdminPostReport = (id, data) =>
+  api.post(`/admin/post-reports/${id}`, data);
 
 // ===== CAMPAIGNS =====
 // params: { page, per_page, keyword, trang_thai, danh_muc_id }
@@ -97,9 +95,33 @@ export const rejectCampaign = async (id) => {
   return res.data;
 };
 
-// Tạm dừng chiến dịch (BE chưa làm — sẽ là POST /admin/campaigns/{id}/pause)
-export const pauseCampaign = async (id, ly_do = "") => {
-  const res = await api.post(`/admin/campaigns/${id}/pause`, { ly_do });
+// Tạm dừng chiến dịch (BE: POST /admin/campaigns/{id}/suspend, body { ly_do })
+export const suspendCampaign = async (id, ly_do = "") => {
+  const res = await api.post(`/admin/campaigns/${id}/suspend`, { ly_do });
+  return res.data;
+};
+
+// Tạm dừng bài đăng (BE: POST /admin/posts/{id}/suspend, body { ly_do })
+export const suspendPost = async (id, ly_do = "") => {
+  const res = await api.post(`/admin/posts/${id}/suspend`, { ly_do });
+  return res.data;
+};
+
+// Danh sách vi phạm 1 chiến dịch (cho modal)
+export const getCampaignViolations = async (
+  id,
+  params = { trang_thai: "CHO_XU_LY", limit: 100 },
+) => {
+  const res = await api.get(`/admin/campaigns/${id}/violations`, { params });
+  return res.data;
+};
+
+// Danh sách vi phạm 1 bài đăng (cho modal)
+export const getPostViolations = async (
+  id,
+  params = { trang_thai: "CHO_XU_LY", limit: 100 },
+) => {
+  const res = await api.get(`/admin/posts/${id}/violations`, { params });
   return res.data;
 };
 
@@ -142,5 +164,31 @@ export const getDashboardFundraising = async () => {
 
 export const getDashboardActivities = async () => {
   const res = await api.get("/admin/dashboard/recent-activities");
+  return res.data;
+};
+// ===== VIOLATION REASONS =====
+// GET /admin/violation-reasons — danh sách lý do vi phạm chuẩn từ BE
+export const getViolationReasons = async () => {
+  const res = await api.get("/admin/violation-reasons");
+  return res.data;
+};
+
+// ===== WITHDRAW REQUESTS (Admin) =====
+// GET /admin/withdraw-requests?trang_thai=CHO_DUYET — danh sách yêu cầu rút
+export const getAdminWithdrawRequests = async (trang_thai) => {
+  const params = trang_thai ? { trang_thai } : {};
+  const res = await api.get("/admin/withdraw-requests", { params });
+  return res.data;
+};
+
+// PUT /admin/withdraw-requests/{id}/confirm — xác nhận giao dịch
+export const confirmWithdrawRequest = async (id, body) => {
+  const res = await api.put(`/admin/withdraw-requests/${id}/confirm`, body);
+  return res.data;
+};
+
+// PUT /admin/withdraw-requests/{id}/reject — từ chối yêu cầu
+export const rejectWithdrawRequest = async (id, body) => {
+  const res = await api.put(`/admin/withdraw-requests/${id}/reject`, body);
   return res.data;
 };

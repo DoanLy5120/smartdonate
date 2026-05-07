@@ -234,7 +234,7 @@ export default function OrgDashboard() {
         data: {
           labels: monthly.labels,
           datasets: [
-            { label: "Tiền nhận", data: monthly.tien_nhan, backgroundColor: "#7c6df0", borderRadius: 5, borderSkipped: false },
+            { label: "Tiền nhận", data: monthly.tien_nhan, backgroundColor: "#22c55e", borderRadius: 5, borderSkipped: false },
             { label: "Tiền chi",  data: monthly.tien_chi,  backgroundColor: "#ef4444", borderRadius: 5, borderSkipped: false },
           ],
         },
@@ -347,7 +347,7 @@ export default function OrgDashboard() {
         <div className="od-card">
           <div className="od-card__title"><span>📈</span> Tiền nhận &amp; chi theo tháng</div>
           <div className="od-legend">
-            <span><span className="od-dot" style={{ background: "#7c6df0" }} />Tiền nhận</span>
+            <span><span className="od-dot" style={{ background: "#22c55e" }} />Tiền nhận</span>
             <span><span className="od-dot" style={{ background: "#ef4444" }} />Tiền chi</span>
           </div>
           <div className="od-chart-wrap">

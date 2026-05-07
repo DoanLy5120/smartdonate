@@ -198,7 +198,8 @@ export default function UserProfile() {
                     },
                     title: item.tieu_de,
                     desc: item.mo_ta,
-                    likeCount: item.so_luot_thich || 0, // ✅ giữ nguyên để fallback
+                    likeCount: item.so_luot_thich || 0,
+                    liked: item.da_thich ?? false,
                     commentCount: item.so_binh_luan || 0,
                     location: item.dia_diem,
                     time: item.ngay_dang,

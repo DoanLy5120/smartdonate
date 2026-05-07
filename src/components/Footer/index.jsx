@@ -12,7 +12,7 @@ export default function Footer() {
           </div>
 
           <div className="app-footer__col">
-            <div className="app-footer__heading">Tổng Quan</div>
+            <div className="app-footer__heading">Trang chủ</div>
             <a className="app-footer__link" href="/chien-dich">
               Chiến dịch
             </a>

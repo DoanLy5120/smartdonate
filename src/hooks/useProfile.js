@@ -14,6 +14,12 @@ const useProfile = () => {
     loadingDonations,
     loadingPosts,
     loadingCampaigns,
+    donationsHasMore,
+    postsHasMore,
+    campaignsHasMore,
+    donationsTotal,
+    postsTotal,
+    campaignsTotal,
     fetchProfile,
     fetchDonations,
     fetchMyPosts,
@@ -27,7 +33,7 @@ const useProfile = () => {
     fetchProfile();
     fetchDonations();
     fetchMyPosts(user?.id);
-    fetchMyCampaigns(true);
+    fetchMyCampaigns();
   }, [user?.id]);
 
   return {
@@ -39,6 +45,15 @@ const useProfile = () => {
     loadingDonations,
     loadingPosts,
     loadingCampaigns,
+    donationsHasMore,
+    postsHasMore,
+    campaignsHasMore,
+    donationsTotal,
+    postsTotal,
+    campaignsTotal,
+    loadMoreDonations: () => fetchDonations(true),
+    loadMorePosts: () => fetchMyPosts(true),
+    loadMoreCampaigns: () => fetchMyCampaigns(true),
     handleUpdateProfile,
     handleChangePassword,
     handleUpdateDiaChi,

@@ -8,6 +8,7 @@ import {
   getCampaignForEdit,
   updateCampaign,
   getWithdrawTransactions,
+  getWithdrawWithExpenses,
   createExpense,
 } from "../api/campaignService";
 
@@ -205,10 +206,25 @@ const useCampaignStore = create((set, get) => ({
   // ─────────── EXPENSE / WITHDRAW ───────────
 
   // Lấy danh sách giao dịch RÚT của chiến dịch (để chọn trong modal Hoạt động chi quỹ)
+  fetchWithdrawWithExpenses: async (campaignId) => {
+    try {
+      const res = await getWithdrawWithExpenses(campaignId);
+      // BE trả array trực tiếp, không wrap trong { data: [] }
+      const list = Array.isArray(res) ? res : (res?.data || []);
+      return { ok: true, data: list };
+    } catch (err) {
+      console.error("Lỗi fetch withdraw with expenses:", err);
+      return { ok: false, err, data: [] };
+    }
+  },
+
   fetchWithdrawTransactions: async (campaignId) => {
     try {
       const res = await getWithdrawTransactions(campaignId);
-      return { ok: true, data: res?.data || [] };
+      // BE dùng leftJoin → bị duplicate rows → dedup theo id
+      const raw = res?.data || [];
+      const unique = Array.from(new Map(raw.map(item => [item.id, item])).values());
+      return { ok: true, data: unique };
     } catch (err) {
       console.error("Lỗi fetch withdraw transactions:", err);
       return { ok: false, err, data: [] };
