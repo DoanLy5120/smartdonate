@@ -301,6 +301,34 @@ export default function PostDetailModal({ post, visible, onClose }) {
     }
   };
 
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    const url = `https://smartdonate-phi.vercel.app/bai-dang/${post.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: `${post.title} — SmartDonate`,
+          url,
+        });
+        return;
+      } catch {}
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      notification.success({
+        message: "Đã sao chép liên kết",
+        description: "Bạn có thể dán vào Messenger, Zalo, Facebook...",
+        placement: "topRight",
+        duration: 2,
+      });
+    } catch {
+      notification.error({ message: "Không thể sao chép, thử lại nhé" });
+    }
+  };
+
   const toggleReplies = (commentId) => {
     setExpandedReplies((prev) => ({
       ...prev,
@@ -468,7 +496,10 @@ export default function PostDetailModal({ post, visible, onClose }) {
                 <FiMessageCircle size={19} />
                 <span>Nhắn tin</span>
               </button>
-              <button className="pdc__action-btn pdc__action-btn--share">
+              <button
+                className="pdc__action-btn pdc__action-btn--share"
+                onClick={handleShare}
+              >
                 <FiSend size={19} />
                 <span>Chia sẻ</span>
               </button>

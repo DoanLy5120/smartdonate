@@ -32,6 +32,7 @@ import ForgotPassword from "../pages/auth/ForgotPassword/Forgot.jsx";
 import UserProfile from "../pages/guest/UserProfile/UserProfile.jsx";
 import OrgDashboard from "../pages/organization/Dashboard/OrgDashboard.jsx";
 import CampaignMap from "../pages/guest/CampaignMap/CampaignMap.jsx";
+import PostDetail from "../pages/guest/PostDetail/PostDetail.jsx";
 
 // ================== PUBLIC ROUTES ==================
 const publicRoutes = [
@@ -64,6 +65,14 @@ const publicRoutes = [
     element: (
       <PublicRoute>
         <ForgotPassword />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/bai-dang/:id",
+    element: (
+      <PublicRoute>
+        <PostDetail />
       </PublicRoute>
     ),
   },

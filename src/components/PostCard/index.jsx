@@ -313,6 +313,34 @@ export default function PostCard({ post, style, onDelete }) {
     setEditOpen(true);
   };
 
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    const url = `https://smartdonate-phi.vercel.app/bai-dang/${post.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: `${post.title} — SmartDonate`,
+          url,
+        });
+        return;
+      } catch {}
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      notification.success({
+        message: "Đã sao chép liên kết",
+        description: "Bạn có thể dán vào Messenger, Zalo, Facebook...",
+        placement: "topRight",
+        duration: 2,
+      });
+    } catch {
+      notification.error({ message: "Không thể sao chép, thử lại nhé" });
+    }
+  };
+
   const handleSelectImages = (files) => {
     const arr = Array.from(files);
     setEditData((prev) => ({
@@ -410,7 +438,7 @@ export default function PostCard({ post, style, onDelete }) {
         {/* Header */}
         <div className="post-card__header">
           <div className="post-card__avatar" style={{ background: "#1890ff" }}>
-            {finalAvatar  ? (
+            {finalAvatar ? (
               <img
                 src={finalAvatar}
                 alt="avatar"
@@ -609,10 +637,7 @@ export default function PostCard({ post, style, onDelete }) {
               </button>
             )}
 
-            <button
-              className="post-card__icon-btn share"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <button className="post-card__icon-btn share" onClick={handleShare}>
               <FiSend size={20} />
               <span>Chia sẻ</span>
             </button>
@@ -800,7 +825,7 @@ export default function PostCard({ post, style, onDelete }) {
               >
                 {finalAvatar ? (
                   <img
-                    src={finalAvatar }
+                    src={finalAvatar}
                     alt=""
                     style={{
                       width: "100%",
