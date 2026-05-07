@@ -35,6 +35,10 @@ export const forgotPasswordAPI = (data) => {
   return axiosClient.post("/forgot-password", data);
 };
 
+export const verifyOtpAPI = (data) => {
+  return axiosClient.post("/verify-otp", data);
+};
+
 // RESET PASSWORD
 export const resetPasswordAPI = (data) => {
   return axiosClient.post("/reset-password", data);

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   getMeAPI,
   forgotPasswordAPI,
+  verifyOtpAPI,
   resetPasswordAPI,
 } from "../api/authService";
 
@@ -91,6 +92,11 @@ const useAuthStore = create((set, get) => {
 
     forgotPassword: async (email) => {
       const res = await forgotPasswordAPI({ email });
+      return res.data;
+    },
+
+    verifyOtp: async (data) => {
+      const res = await verifyOtpAPI(data);
       return res.data;
     },
     resetPassword: async (data) => {

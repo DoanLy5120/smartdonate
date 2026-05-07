@@ -17,7 +17,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const { forgotPassword, resetPassword } = useAuthStore();
+  const { forgotPassword, verifyOtp, resetPassword } = useAuthStore();
 
   const handleStep0 = async (values) => {
     try {
@@ -43,8 +43,20 @@ export default function ForgotPassword() {
   };
 
   const handleStep1 = async (values) => {
-    setOtp(values.otp);
-    setStep(2);
+    try {
+      setLoading(true);
+      await verifyOtp({ email, otp: values.otp });
+      setOtp(values.otp);
+      setStep(2);
+    } catch (err) {
+      notification.error({
+        message: "Mã OTP không đúng",
+        description:
+          err.response?.data?.message || "Vui lòng kiểm tra lại mã xác thực",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStep2 = async (values) => {

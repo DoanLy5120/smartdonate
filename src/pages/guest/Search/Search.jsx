@@ -223,9 +223,6 @@ export default function SearchPage() {
                           </button>
                         </span>
                       ))}
-                      <button className="sp-toolbar__clear" onClick={clearAll}>
-                        Xóa tất cả
-                      </button>
                     </div>
                   )}
                 </div>

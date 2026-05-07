@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
     if (form.password.length < 6) { setError("Mật khẩu phải ít nhất 6 ký tự"); return; }
     if (form.password !== form.password_confirmation) { setError("Mật khẩu không khớp"); return; }
     alert("Đổi mật khẩu thành công!");
-    navigate("/login");
+    navigate("/dang-nhap");
   };
 
   return (
@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
               <button type="submit" className="btn-green" style={{ marginTop: 8 }}>Xác nhận</button>
             </form>
             <p className="auth-switch">
-              Bạn đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+              Bạn đã có tài khoản? <Link to="/dang-nhap">Đăng nhập</Link>
             </p>
           </div>
         </div>
