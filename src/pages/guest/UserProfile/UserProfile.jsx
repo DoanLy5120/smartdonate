@@ -138,7 +138,7 @@ export default function UserProfile() {
           )}
 
           {/* Org strip | Impact card */}
-          {isOrg ? (
+          {isOrg && (
             <div className="up-org-strip">
               <div className="up-org-strip__logo">
                 {toChuc?.logo ? <img src={toChuc.logo} alt="" /> : "🏢"}
@@ -155,17 +155,6 @@ export default function UserProfile() {
                   Xem tổ chức <FiArrowRight size={12} />
                 </button>
               )}
-            </div>
-          ) : (
-            <div className="up-impact">
-              <div className="up-impact__icon">💚</div>
-              <div className="up-impact__body">
-                <div className="up-impact__title">Tổng tác động cộng đồng</div>
-                <div className="up-impact__sub">
-                  Qua ủng hộ + bài đăng cho/nhận
-                </div>
-              </div>
-              <div className="up-impact__num">{userPosts.length}</div>
             </div>
           )}
 
