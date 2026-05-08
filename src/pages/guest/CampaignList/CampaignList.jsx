@@ -17,14 +17,12 @@ import "./CampaignList.scss";
 
 const PAGE_SIZE = 8;
 
-const SORT_OPTIONS = [
-  { key: "newest", label: "Mới nhất", icon: <FiChevronRight size={13} /> },
-  { key: "ending_soon", label: "Sắp kết thúc", icon: <FiClock size={13} /> },
-  {
-    key: "almost_done",
-    label: "Sắp hoàn thành",
-    icon: <FiTrendingUp size={13} />,
-  },
+const TRANG_THAI_OPTIONS = [
+  { key: "", label: "Tất cả" },
+  { key: "HOAT_DONG", label: "Đang hoạt động" },
+  { key: "HOAN_THANH", label: "Hoàn thành" },
+  { key: "TAM_DUNG", label: "Tạm dừng" },
+  { key: "DA_KET_THUC", label: "Đã kết thúc" },
 ];
 
 export default function CampaignList() {
@@ -39,7 +37,7 @@ export default function CampaignList() {
 
   const queryCategory = Number(searchParams.get("category") ?? 0);
   const page = Number(searchParams.get("page") ?? 1);
-  const sortKey = searchParams.get("sort") ?? "newest";
+  const trangThai = searchParams.get("trang_thai") ?? "";
 
   const campaigns = useCampaignStore((s) => s.campaigns);
   const pagination = useCampaignStore((s) => s.pagination);
@@ -66,39 +64,33 @@ export default function CampaignList() {
   };
 
   const params = useMemo(() => {
-    const p = {
-      sort: sortKey,
-      page,
-    };
-
-    if (queryCategory !== 0) {
-      p.danh_muc_id = queryCategory;
-    }
-
+    const p = { page };
+    if (queryCategory !== 0) p.danh_muc_id = queryCategory;
+    if (trangThai) p.trang_thai = trangThai;
     return p;
-  }, [sortKey, page, queryCategory]);
+  }, [trangThai, page, queryCategory]);
 
   useEffect(() => {
     fetchCampaigns(params);
   }, [params]);
 
-  const currentSort = SORT_OPTIONS.find((o) => o.key === sortKey);
+  const currentOption =
+    TRANG_THAI_OPTIONS.find((o) => o.key === trangThai) ??
+    TRANG_THAI_OPTIONS[0];
 
   const dropdownItems = {
-    items: SORT_OPTIONS.map((o) => ({
+    items: TRANG_THAI_OPTIONS.map((o) => ({
       key: o.key,
       label: (
-        <span className={`cl-sort-option${o.key === sortKey ? " active" : ""}`}>
-          {o.icon} {o.label}
+        <span
+          className={`cl-sort-option${o.key === trangThai ? " active" : ""}`}
+        >
+          {o.label}
         </span>
       ),
     })),
-    onClick: ({ key }) => {
-      navigateWithParams({
-        sort: key,
-        page: 1,
-      });
-    },
+    onClick: ({ key }) =>
+      navigateWithParams({ trang_thai: key || null, page: 1 }),
   };
 
   function handleCategoryChange(id) {
@@ -146,7 +138,7 @@ export default function CampaignList() {
             placement="bottomRight"
           >
             <Button className="cl-sort-btn">
-              Hiển thị: <strong>{currentSort?.label}</strong>
+              Trạng thái: <strong>{currentOption.label}</strong>
               <FiChevronDown size={14} />
             </Button>
           </Dropdown>

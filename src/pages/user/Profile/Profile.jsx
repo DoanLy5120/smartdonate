@@ -364,7 +364,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3>{toChuc?.ten_to_chuc || "Tổ chức"}</h3>
-                      <p>{taiKhoan?.ngan_hang || "---"}</p>
+                      <p>{taiKhoan?.so_tai_khoan|| "---"}</p>
                     </div>
                   </div>
                   {stk && (
