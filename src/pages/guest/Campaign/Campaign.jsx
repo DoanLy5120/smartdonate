@@ -81,7 +81,7 @@ export default function Campaign() {
       params.set("category", cat.id);
     }
 
-    params.set("page", 1); 
+    params.set("page", 1);
 
     navigate(`/chien-dich/danh-sach?${params.toString()}`);
   }
@@ -143,23 +143,65 @@ export default function Campaign() {
 
     // TH2: Đã đăng ký (có status) → hiện trạng thái, bấm → navigate sang trang đăng ký để xem
     if (organizationStatus) {
+      // Nếu đã được duyệt → hiện CTA tạo chiến dịch luôn
+      if (organizationStatus.trang_thai === "CHAP_NHAN") {
+        return (
+          <div className="sidebar__cta-box sidebar__cta-box--org">
+            <div className="sidebar__cta-banner">
+              <img
+                src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=400&auto=format&fit=crop"
+                alt="campaign"
+              />
+              <div className="sidebar__cta-banner-overlay">
+                <span>🎯 Tạo chiến dịch gây quỹ</span>
+              </div>
+            </div>
+            <h3 className="sidebar__cta-title">TẠO CHIẾN DỊCH MỚI</h3>
+            <p className="sidebar__cta-desc">
+              Bạn đã được xác minh là tổ chức từ thiện. Hãy tạo chiến dịch để
+              kêu gọi sự ủng hộ từ cộng đồng!
+            </p>
+            <div className="sidebar__cta-divider" />
+            <ul className="sidebar__cta-features">
+              <li>
+                <FiCheckCircle size={14} /> Đăng chiến dịch gây quỹ
+              </li>
+              <li>
+                <FiCheckCircle size={14} /> Theo dõi tiến độ real-time
+              </li>
+              <li>
+                <FiCheckCircle size={14} /> Báo cáo minh bạch
+              </li>
+            </ul>
+            <div className="sidebar__cta-trust">
+              <FiAward size={13} />
+              <span>
+                Tổ chức đã được <strong>xác minh</strong>
+              </span>
+            </div>
+            <Button
+              className="sidebar__cta-btn"
+              type="primary"
+              block
+              onClick={() => navigate("/chien-dich/tao-moi")}
+              style={{ background: "#52c41a", borderColor: "#52c41a" }}
+            >
+              TẠO CHIẾN DỊCH NGAY
+            </Button>
+          </div>
+        );
+      }
+
+      // CHO_XU_LY hoặc TU_CHOI → vẫn hiện trạng thái
       const statusConfig = {
         CHO_XU_LY: {
           title: "ĐANG CHỜ XÉT DUYỆT",
-          desc: "Hồ sơ của bạn đã được gửi và đang chờ admin xét duyệt. Chúng tôi sẽ thông báo khi có kết quả.",
-          btnStyle: { background: "#fa8c16", borderColor: "#fa8c16" },
+          desc: "Hồ sơ đã gửi và đang chờ admin xét duyệt. Chúng tôi sẽ thông báo khi có kết quả.",
           badgeColor: "#fa8c16",
-        },
-        CHAP_NHAN: {
-          title: "ĐÃ ĐƯỢC DUYỆT",
-          desc: "Tổ chức của bạn đã được xác minh thành công!",
-          btnStyle: { background: "#52c41a", borderColor: "#52c41a" },
-          badgeColor: "#52c41a",
         },
         TU_CHOI: {
           title: "HỒ SƠ BỊ TỪ CHỐI",
-          desc: "Hồ sơ của bạn bị từ chối. Vui lòng kiểm tra lại và đăng ký lại.",
-          btnStyle: { background: "#ff4d4f", borderColor: "#ff4d4f" },
+          desc: "Hồ sơ bị từ chối. Vui lòng kiểm tra lại và đăng ký lại.",
           badgeColor: "#ff4d4f",
         },
       };
@@ -169,7 +211,6 @@ export default function Campaign() {
 
       return (
         <div className="sidebar__cta-box">
-          <div className="sidebar__cta-star">{cfg.icon}</div>
           <div
             className="sidebar__cta-status-badge"
             style={{
@@ -233,7 +274,7 @@ export default function Campaign() {
           type="primary"
           danger
           block
-          onClick={() => navigate("/dk-to-chuc")} 
+          onClick={() => navigate("/dk-to-chuc")}
         >
           ĐĂNG KÝ XÁC MINH
         </Button>
