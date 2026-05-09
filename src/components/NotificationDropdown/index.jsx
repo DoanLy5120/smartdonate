@@ -381,7 +381,6 @@ export default function NotificationDropdown({
   triggerClassName = "app-header__iconBtn",
 }) {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const roles = useAuthStore((s) => s.roles);
   const isAdmin = Array.isArray(roles)
     ? roles.some(
@@ -393,33 +392,11 @@ export default function NotificationDropdown({
     notifications,
     unreadCount,
     loading,
-    fetchNotifications,
     markAsRead,
     markAllAsRead,
-    subscribeNotifications,
-    unsubscribeNotifications,
   } = useNotificationStore();
   const [selectedPost, setSelectedPost] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-
-  useEffect(() => {
-    fetchNotifications();
-
-    if (user?.id) {
-      subscribeNotifications(user.id);
-    }
-
-    return () => {
-      if (user?.id) {
-        unsubscribeNotifications(user.id);
-      }
-    };
-  }, [
-    user?.id,
-    fetchNotifications,
-    subscribeNotifications,
-    unsubscribeNotifications,
-  ]);
 
   const handleClickNotif = async (notif) => {
     if (!notif.read_at) await markAsRead(notif.id);

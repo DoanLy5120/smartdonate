@@ -3,10 +3,23 @@ import { useLocation } from "react-router-dom";
 import useAuthStore from "./store/authStore";
 import useChatStore from "./store/chatStore";
 import AppRoutes from "./routes/index.jsx";
+import useNotificationStore from "./store/notificationStore";
 
 function App() {
   const location = useLocation();
   const userId = useAuthStore((s) => s.user?.id);
+
+  useEffect(() => {
+    if (!userId) return;
+    const {
+      fetchNotifications,
+      subscribeNotifications,
+      unsubscribeNotifications,
+    } = useNotificationStore.getState();
+    fetchNotifications();
+    subscribeNotifications(userId);
+    return () => unsubscribeNotifications(userId);
+  }, [userId]);
 
   // Khởi động realtime sau khi có userId
   useEffect(() => {

@@ -16,7 +16,7 @@
 
   &__actions { display: flex; gap: 14px; flex-shrink: 0; }
   &__left { width: 50%; }
-  &__right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  &__right { display: flex; flex-direction: column; gap: 12px; min-width: 400px; }
 }
 
 .profile-avatar {
@@ -619,7 +619,6 @@
       line-height: 1.35;
       flex: 1;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
@@ -782,7 +781,6 @@
     margin: 0;
     flex: 1;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
