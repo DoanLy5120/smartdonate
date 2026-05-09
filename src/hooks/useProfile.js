@@ -32,7 +32,7 @@ const useProfile = () => {
   useEffect(() => {
     fetchProfile();
     fetchDonations();
-    fetchMyPosts(user?.id);
+    fetchMyPosts();
     fetchMyCampaigns();
   }, [user?.id]);
 

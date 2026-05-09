@@ -1,8 +1,16 @@
 import { useState, useEffect } from "react";
 import { notification } from "antd";
 import {
-  FiClock, FiCheckCircle, FiXCircle, FiCheck, FiX, FiDollarSign,
-  FiBriefcase, FiCalendar, FiHash, FiAlertCircle,
+  FiClock,
+  FiCheckCircle,
+  FiXCircle,
+  FiCheck,
+  FiX,
+  FiDollarSign,
+  FiBriefcase,
+  FiCalendar,
+  FiHash,
+  FiAlertCircle,
 } from "react-icons/fi";
 import {
   getAdminWithdrawRequests,
@@ -12,9 +20,24 @@ import {
 import "./Withdrawals.scss";
 
 const STATUS_TABS = [
-  { key: "CHO_DUYET", label: "Chờ duyệt", icon: <FiClock size={14} />, cls: "yellow" },
-  { key: "DA_DUYET",  label: "Đã duyệt",  icon: <FiCheckCircle size={14} />, cls: "green" },
-  { key: "TU_CHOI",   label: "Từ chối",   icon: <FiXCircle size={14} />, cls: "red" },
+  {
+    key: "CHO_DUYET",
+    label: "Chờ duyệt",
+    icon: <FiClock size={14} />,
+    cls: "yellow",
+  },
+  {
+    key: "DA_DUYET",
+    label: "Đã duyệt",
+    icon: <FiCheckCircle size={14} />,
+    cls: "green",
+  },
+  {
+    key: "TU_CHOI",
+    label: "Từ chối",
+    icon: <FiXCircle size={14} />,
+    cls: "red",
+  },
 ];
 
 function fmtVnd(n) {
@@ -24,9 +47,8 @@ function fmtVnd(n) {
 
 export default function Withdrawals() {
   const [tab, setTab] = useState("CHO_DUYET");
-  const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [counts, setCounts] = useState({ CHO_DUYET: 0, DA_DUYET: 0, TU_CHOI: 0 });
+  const [allList, setAllList] = useState([]);
 
   // Modal
   const [confirmTarget, setConfirmTarget] = useState(null);
@@ -41,16 +63,22 @@ export default function Withdrawals() {
   });
   const [rejectReason, setRejectReason] = useState("");
 
-  const fetchList = async (currentTab = tab) => {
+  const fetchAll = async () => {
     setLoading(true);
     try {
-      const res = await getAdminWithdrawRequests(currentTab);
-      const data = res?.data || [];
-      setList(data);
+      const [r1, r2, r3] = await Promise.all([
+        getAdminWithdrawRequests("CHO_DUYET"),
+        getAdminWithdrawRequests("DA_DUYET"),
+        getAdminWithdrawRequests("TU_CHOI"),
+      ]);
+      setAllList([
+        ...(r1?.data || []),
+        ...(r2?.data || []),
+        ...(r3?.data || []),
+      ]);
     } catch (err) {
       notification.error({
         message: "Không tải được danh sách",
-        description: err?.response?.data?.message || err?.message,
         placement: "topRight",
       });
     } finally {
@@ -58,28 +86,16 @@ export default function Withdrawals() {
     }
   };
 
-  // Lấy số đếm cho từng tab
-  const fetchCounts = async () => {
-    try {
-      const [r1, r2, r3] = await Promise.all([
-        getAdminWithdrawRequests("CHO_DUYET"),
-        getAdminWithdrawRequests("DA_DUYET"),
-        getAdminWithdrawRequests("TU_CHOI"),
-      ]);
-      setCounts({
-        CHO_DUYET: r1?.data?.length || 0,
-        DA_DUYET:  r2?.data?.length || 0,
-        TU_CHOI:   r3?.data?.length || 0,
-      });
-    } catch (err) {
-      console.error("Lỗi fetch counts:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchList();
-    fetchCounts();
-  }, [tab]);
+    fetchAll();
+  }, []);
+
+  const list = allList.filter((r) => r.trang_thai === tab);
+  const counts = {
+    CHO_DUYET: allList.filter((r) => r.trang_thai === "CHO_DUYET").length,
+    DA_DUYET: allList.filter((r) => r.trang_thai === "DA_DUYET").length,
+    TU_CHOI: allList.filter((r) => r.trang_thai === "TU_CHOI").length,
+  };
 
   const openConfirm = (item) => {
     setConfirmForm({
@@ -97,16 +113,27 @@ export default function Withdrawals() {
 
   const handleConfirm = async () => {
     if (!confirmForm.ma_giao_dich_ngan_hang.trim()) {
-      notification.warning({ message: "Vui lòng nhập mã giao dịch ngân hàng!", placement: "topRight" });
+      notification.warning({
+        message: "Vui lòng nhập mã giao dịch ngân hàng!",
+        placement: "topRight",
+      });
       return;
     }
     setSubmitting(true);
     try {
       await confirmWithdrawRequest(confirmTarget.id, confirmForm);
-      notification.success({ message: "Đã xác nhận giao dịch!", placement: "topRight" });
+      notification.success({
+        message: "Đã xác nhận giao dịch!",
+        placement: "topRight",
+      });
       setConfirmTarget(null);
-      fetchList();
-      fetchCounts();
+      setAllList((prev) =>
+        prev.map((r) =>
+          r.id === confirmTarget.id
+            ? { ...r, trang_thai: "DA_DUYET", ...confirmForm }
+            : r,
+        ),
+      );
     } catch (err) {
       notification.error({
         message: "Xác nhận thất bại",
@@ -120,16 +147,29 @@ export default function Withdrawals() {
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      notification.warning({ message: "Vui lòng nhập lý do từ chối!", placement: "topRight" });
+      notification.warning({
+        message: "Vui lòng nhập lý do từ chối!",
+        placement: "topRight",
+      });
       return;
     }
     setSubmitting(true);
     try {
-      await rejectWithdrawRequest(rejectTarget.id, { ghi_chu_admin: rejectReason });
-      notification.success({ message: "Đã từ chối yêu cầu!", placement: "topRight" });
+      await rejectWithdrawRequest(rejectTarget.id, {
+        ghi_chu_admin: rejectReason,
+      });
+      notification.success({
+        message: "Đã từ chối yêu cầu!",
+        placement: "topRight",
+      });
       setRejectTarget(null);
-      fetchList();
-      fetchCounts();
+      setAllList((prev) =>
+        prev.map((r) =>
+          r.id === rejectTarget.id
+            ? { ...r, trang_thai: "TU_CHOI", ghi_chu_admin: rejectReason }
+            : r,
+        ),
+      );
     } catch (err) {
       notification.error({
         message: "Từ chối thất bại",
@@ -195,12 +235,16 @@ export default function Withdrawals() {
                   <div className="adw-item__reason">{r.mo_ta}</div>
 
                   <div className="adw-item__meta">
-                    <span><FiCalendar size={11} /> Yêu cầu: {r.thoi_gian}</span>
-                    {r.trang_thai === "DA_DUYET" && r.ma_giao_dich_ngan_hang && (
-                      <span className="adw-item__bank">
-                        <FiHash size={11} /> Mã GD: <strong>{r.ma_giao_dich_ngan_hang}</strong>
-                      </span>
-                    )}
+                    <span>
+                      <FiCalendar size={11} /> Yêu cầu: {r.thoi_gian}
+                    </span>
+                    {r.trang_thai === "DA_DUYET" &&
+                      r.ma_giao_dich_ngan_hang && (
+                        <span className="adw-item__bank">
+                          <FiHash size={11} /> Mã GD:{" "}
+                          <strong>{r.ma_giao_dich_ngan_hang}</strong>
+                        </span>
+                      )}
                     {r.trang_thai === "DA_DUYET" && r.ngay_giao_dich && (
                       <span>📅 NH xử lý: {r.ngay_giao_dich}</span>
                     )}
@@ -208,17 +252,24 @@ export default function Withdrawals() {
 
                   {r.trang_thai === "TU_CHOI" && r.ghi_chu_admin && (
                     <div className="adw-item__reject">
-                      <FiAlertCircle size={12} /> <strong>Lý do từ chối:</strong> {r.ghi_chu_admin}
+                      <FiAlertCircle size={12} />{" "}
+                      <strong>Lý do từ chối:</strong> {r.ghi_chu_admin}
                     </div>
                   )}
                 </div>
 
                 {r.trang_thai === "CHO_DUYET" && (
                   <div className="adw-item__actions">
-                    <button className="adw-btn adw-btn--success" onClick={() => openConfirm(r)}>
+                    <button
+                      className="adw-btn adw-btn--success"
+                      onClick={() => openConfirm(r)}
+                    >
                       <FiCheck size={13} /> Xác nhận
                     </button>
-                    <button className="adw-btn adw-btn--danger" onClick={() => openReject(r)}>
+                    <button
+                      className="adw-btn adw-btn--danger"
+                      onClick={() => openReject(r)}
+                    >
                       <FiX size={13} /> Từ chối
                     </button>
                   </div>
@@ -231,20 +282,33 @@ export default function Withdrawals() {
 
       {/* Modal: Xác nhận */}
       {confirmTarget && (
-        <div className="adw-overlay" onClick={(e) => e.target === e.currentTarget && setConfirmTarget(null)}>
+        <div
+          className="adw-overlay"
+          onClick={(e) =>
+            e.target === e.currentTarget && setConfirmTarget(null)
+          }
+        >
           <div className="adw-modal">
             <div className="adw-modal__header">
               <div>
                 <div className="adw-modal__title">
                   <FiCheck size={16} /> Xác nhận giao dịch ngân hàng
                 </div>
-                <div className="adw-modal__sub">{confirmTarget.ten_chien_dich}</div>
+                <div className="adw-modal__sub">
+                  {confirmTarget.ten_chien_dich}
+                </div>
               </div>
-              <button className="adw-modal__close" onClick={() => setConfirmTarget(null)}>✕</button>
+              <button
+                className="adw-modal__close"
+                onClick={() => setConfirmTarget(null)}
+              >
+                ✕
+              </button>
             </div>
             <div className="adw-modal__body">
               <div className="adw-modal__highlight">
-                <FiDollarSign size={14} /> Số tiền: <strong>{fmtVnd(confirmTarget.so_tien)}</strong>
+                <FiDollarSign size={14} /> Số tiền:{" "}
+                <strong>{fmtVnd(confirmTarget.so_tien)}</strong>
               </div>
 
               <div className="adw-modal__field">
@@ -253,7 +317,12 @@ export default function Withdrawals() {
                   type="text"
                   placeholder="VD: MB202605061234"
                   value={confirmForm.ma_giao_dich_ngan_hang}
-                  onChange={(e) => setConfirmForm((f) => ({ ...f, ma_giao_dich_ngan_hang: e.target.value }))}
+                  onChange={(e) =>
+                    setConfirmForm((f) => ({
+                      ...f,
+                      ma_giao_dich_ngan_hang: e.target.value,
+                    }))
+                  }
                   maxLength={100}
                   autoFocus
                 />
@@ -264,7 +333,12 @@ export default function Withdrawals() {
                 <input
                   type="datetime-local"
                   value={confirmForm.ngay_giao_dich}
-                  onChange={(e) => setConfirmForm((f) => ({ ...f, ngay_giao_dich: e.target.value }))}
+                  onChange={(e) =>
+                    setConfirmForm((f) => ({
+                      ...f,
+                      ngay_giao_dich: e.target.value,
+                    }))
+                  }
                 />
               </div>
 
@@ -273,18 +347,32 @@ export default function Withdrawals() {
                 <textarea
                   placeholder="Ghi chú nội bộ về giao dịch này..."
                   value={confirmForm.ghi_chu_admin}
-                  onChange={(e) => setConfirmForm((f) => ({ ...f, ghi_chu_admin: e.target.value }))}
+                  onChange={(e) =>
+                    setConfirmForm((f) => ({
+                      ...f,
+                      ghi_chu_admin: e.target.value,
+                    }))
+                  }
                   rows={2}
                   maxLength={500}
                 />
               </div>
             </div>
             <div className="adw-modal__footer">
-              <button className="adw-btn adw-btn--ghost" onClick={() => setConfirmTarget(null)} disabled={submitting}>
+              <button
+                className="adw-btn adw-btn--ghost"
+                onClick={() => setConfirmTarget(null)}
+                disabled={submitting}
+              >
                 Hủy
               </button>
-              <button className="adw-btn adw-btn--success" onClick={handleConfirm} disabled={submitting}>
-                <FiCheck size={13} /> {submitting ? "Đang xử lý..." : "Xác nhận"}
+              <button
+                className="adw-btn adw-btn--success"
+                onClick={handleConfirm}
+                disabled={submitting}
+              >
+                <FiCheck size={13} />{" "}
+                {submitting ? "Đang xử lý..." : "Xác nhận"}
               </button>
             </div>
           </div>
@@ -293,20 +381,31 @@ export default function Withdrawals() {
 
       {/* Modal: Từ chối */}
       {rejectTarget && (
-        <div className="adw-overlay" onClick={(e) => e.target === e.currentTarget && setRejectTarget(null)}>
+        <div
+          className="adw-overlay"
+          onClick={(e) => e.target === e.currentTarget && setRejectTarget(null)}
+        >
           <div className="adw-modal">
             <div className="adw-modal__header">
               <div>
                 <div className="adw-modal__title">
                   <FiX size={16} /> Từ chối yêu cầu rút tiền
                 </div>
-                <div className="adw-modal__sub">{rejectTarget.ten_chien_dich}</div>
+                <div className="adw-modal__sub">
+                  {rejectTarget.ten_chien_dich}
+                </div>
               </div>
-              <button className="adw-modal__close" onClick={() => setRejectTarget(null)}>✕</button>
+              <button
+                className="adw-modal__close"
+                onClick={() => setRejectTarget(null)}
+              >
+                ✕
+              </button>
             </div>
             <div className="adw-modal__body">
               <div className="adw-modal__highlight adw-modal__highlight--danger">
-                <FiAlertCircle size={14} /> Số tiền yêu cầu: <strong>{fmtVnd(rejectTarget.so_tien)}</strong>
+                <FiAlertCircle size={14} /> Số tiền yêu cầu:{" "}
+                <strong>{fmtVnd(rejectTarget.so_tien)}</strong>
               </div>
 
               <div className="adw-modal__field">
@@ -319,14 +418,24 @@ export default function Withdrawals() {
                   maxLength={500}
                   autoFocus
                 />
-                <div className="adw-modal__charcount">{rejectReason.length}/500</div>
+                <div className="adw-modal__charcount">
+                  {rejectReason.length}/500
+                </div>
               </div>
             </div>
             <div className="adw-modal__footer">
-              <button className="adw-btn adw-btn--ghost" onClick={() => setRejectTarget(null)} disabled={submitting}>
+              <button
+                className="adw-btn adw-btn--ghost"
+                onClick={() => setRejectTarget(null)}
+                disabled={submitting}
+              >
                 Hủy
               </button>
-              <button className="adw-btn adw-btn--danger" onClick={handleReject} disabled={submitting}>
+              <button
+                className="adw-btn adw-btn--danger"
+                onClick={handleReject}
+                disabled={submitting}
+              >
                 <FiX size={13} /> {submitting ? "Đang xử lý..." : "Từ chối"}
               </button>
             </div>

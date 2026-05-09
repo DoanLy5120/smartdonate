@@ -143,7 +143,7 @@ export default function Header() {
           ? [
               {
                 key: "thong-ke",
-                label: "Thống kê tổ chức",
+                label: "Thống kê chiến dịch",
                 onClick: () => navigate("/thong-ke"),
               },
             ]

@@ -91,6 +91,7 @@ const useProfileStore = create((set, get) => ({
   // BE /donate/history trả: { data: { data: [...], next_page_url, ... } }
   fetchDonations: async (loadMore = false) => {
     if (!loadMore && get().isFetchedDonations) return;
+    if (loadMore && !get().isFetchedDonations) return;
     if (donatePromise) return donatePromise;
     if (get().loadingDonations) return;
 
@@ -133,6 +134,7 @@ const useProfileStore = create((set, get) => ({
   // BE /posts/me trả: { data: { data: [...], next_page_url, ... } }
   fetchMyPosts: async (loadMore = false) => {
     if (!loadMore && get().isFetchedPosts) return;
+    if (loadMore && !get().isFetchedPosts) return;
     if (postsPromise) return postsPromise;
     if (get().loadingPosts) return;
 
@@ -172,6 +174,7 @@ const useProfileStore = create((set, get) => ({
   // BE /campaigns/me trả paginator trực tiếp: { data: [...], next_page_url, ... }
   fetchMyCampaigns: async (loadMore = false) => {
     if (!loadMore && get().isFetchedCampaigns) return;
+    if (loadMore && !get().isFetchedCampaigns) return;
     if (campaignsPromise) return campaignsPromise;
     if (get().loadingCampaigns) return;
 

@@ -12,7 +12,7 @@ import useAuthStore from "./authStore";
 import echo from "../socket";
 
 const messagePromises = {};
-const activeChannels = new Map(); 
+const activeChannels = new Map();
 
 const useChatStore = create((set, get) => ({
   chats: [],
@@ -22,7 +22,7 @@ const useChatStore = create((set, get) => ({
   sending: false,
   totalUnread: 0,
   activeChatId: null,
-  pendingChat: null, 
+  pendingChat: null,
 
   // ─── setActiveChatId ──────────────────────────────────────────────────────
   // Nếu rời khỏi pendingChat mà chưa gửi tin → tự xóa pending
@@ -180,7 +180,9 @@ const useChatStore = create((set, get) => ({
       set({ chats: data, totalUnread, loadingChats: false });
       return data;
     } catch (err) {
-      console.error("Lỗi fetch chats:", err);
+      if (err?.response?.status !== 403) {
+        console.error("Lỗi fetch chats:", err);
+      }
       set({ loadingChats: false });
       return [];
     }

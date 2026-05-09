@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { notification } from "antd";
 import {
   FiSearch,
@@ -42,60 +42,69 @@ const LOAI_HINH_MAP = {
 const isPendingOrg = (u) => u.status_label === "Chờ duyệt";
 
 export default function Users() {
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 10;
+  const [filter, setFilter] = useState("all"); 
   const [searchInput, setSearchInput] = useState("");
-  const [filter, setFilter] = useState("all"); // all | org | user | blocked | pending
   const [selected, setSelected] = useState(null);
   const [orgDetail, setOrgDetail] = useState(null);
   const [loadingOrg, setLoadingOrg] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const {
-    users,
-    usersMeta,
-    usersParams,
-    usersSummary,
+    allUsers,
     loadingUsers,
     fetchUsers,
-    fetchUsersSummary,
     handleLockUser,
     handleUnlockUser,
     handleApproveOrg,
     handleRejectOrg,
+    fetchViolationSets,
   } = useAdminStore();
 
   // Fetch lần đầu
   useEffect(() => {
-    fetchUsers({ page: 1 });
-    fetchUsersSummary();
+    fetchUsers();
+    fetchViolationSets();
   }, []);
 
-  // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => {
-      if (searchInput !== usersParams.search) {
-        fetchUsers({ page: 1, search: searchInput });
-      }
-    }, 400);
-    return () => clearTimeout(t);
-  }, [searchInput]);
+    setPage(1);
+  }, [filter, searchInput]);
 
-  // Khi filter đổi → gọi lại với role/status
-  useEffect(() => {
-    let role = "",
-      status = "";
-    if (filter === "org") role = "TO_CHUC";
-    if (filter === "user") role = "NGUOI_DUNG";
-    if (filter === "blocked") status = "BI_CAM";
-    if (filter !== "pending") {
-      fetchUsers({ page: 1, role, status });
-    } else {
-      fetchUsers({ page: 1, role: "", status: "" });
+  const filtered = useMemo(() => {
+    let list = allUsers;
+    if (filter === "org") list = list.filter((u) => u.role === "TO_CHUC");
+    if (filter === "user") list = list.filter((u) => u.role === "NGUOI_DUNG");
+    if (filter === "blocked") list = list.filter((u) => u.status === "BI_CAM");
+    if (filter === "pending") list = list.filter(isPendingOrg);
+    if (searchInput.trim()) {
+      const q = searchInput.toLowerCase();
+      list = list.filter(
+        (u) =>
+          u.name?.toLowerCase().includes(q) ||
+          u.email?.toLowerCase().includes(q),
+      );
     }
-  }, [filter]);
+    return list;
+  }, [allUsers, filter, searchInput]);
 
-  // Filter "Chờ duyệt" client-side (vì BE chưa có param riêng cho org status)
-  const visibleUsers =
-    filter === "pending" ? users.filter(isPendingOrg) : users;
+  const usersSummary = useMemo(
+    () => ({
+      total: allUsers.length,
+      user: allUsers.filter((u) => u.role === "NGUOI_DUNG").length,
+      org: allUsers.filter((u) => u.role === "TO_CHUC").length,
+      blocked: allUsers.filter((u) => u.status === "BI_CAM").length,
+    }),
+    [allUsers],
+  );
+
+  const visibleUsers = useMemo(
+    () => filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE),
+    [filtered, page],
+  );
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
 
   async function handleSelect(u) {
     setSelected(u);
@@ -227,7 +236,7 @@ export default function Users() {
           },
           {
             label: "Chờ duyệt",
-            val: users.filter(isPendingOrg).length,
+            val: allUsers.filter(isPendingOrg).length,
             c: "#fef9c3",
             filter: "pending",
           },
@@ -437,13 +446,16 @@ export default function Users() {
           )}
         </div>
 
-        {filter !== "pending" && (
           <Pagination
-            meta={usersMeta}
+            meta={{
+              current_page: page,
+              last_page: totalPages,
+              total: filtered.length,
+              per_page: PER_PAGE,
+            }}
             loading={loadingUsers}
-            onChange={(page) => fetchUsers({ page })}
+            onChange={(p) => setPage(p)}
           />
-        )}
       </div>
 
       {selected && (
