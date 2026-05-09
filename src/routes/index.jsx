@@ -182,18 +182,18 @@ const publicRoutes = [
       </PublicRoute>
     ),
   },
+  {
+    path: "/bang-tin/nguoi-dung/:id",
+    element: (
+      <PublicRoute>
+        <UserProfile />
+      </PublicRoute>
+    ),
+  },
 ];
 
 // ================== PRIVATE ROUTES ==================
 const privateRoutes = [
-  {
-    path: "/bang-tin/nguoi-dung/:id",
-    element: (
-      <ProtectedRoute>
-        <UserProfile />
-      </ProtectedRoute>
-    ),
-  },
   {
     path: "/thong-ke",
     element: (
