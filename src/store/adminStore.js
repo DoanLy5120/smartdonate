@@ -32,6 +32,7 @@ let campaignsPromise = null;
 let fraudPromise = null;
 let dashboardPromise = null;
 let reportsPromise = null;
+let violationsPromise = null;
 
 const DEFAULT_META = { current_page: 1, per_page: 10, total: 0, last_page: 1 };
 
@@ -67,6 +68,7 @@ const useAdminStore = create((set, get) => ({
   isFetchedFraud: false,
   isFetchedDashboard: false,
   isFetchedReports: false,
+  isFetchedViolations: false,
 
   // ===== USERS =====
   fetchUsers: async (force = false) => {
@@ -75,12 +77,10 @@ const useAdminStore = create((set, get) => ({
     set({ loadingUsers: true });
     usersPromise = (async () => {
       try {
-        const res = await getAdminUsers({ per_page: 500 });
-        set({
-          allUsers: res.data || [],
-          isFetchedUsers: true,
-          loadingUsers: false,
-        });
+        const res = await getAdminUsers({ per_page: 200, page: 1 });
+        // Shape users: { data: [...], meta: { last_page, total } }
+        const list = Array.isArray(res.data) ? res.data : [];
+        set({ allUsers: list, isFetchedUsers: true, loadingUsers: false });
       } catch (err) {
         console.error("Lỗi fetch users:", err);
         set({ loadingUsers: false });
@@ -130,9 +130,30 @@ const useAdminStore = create((set, get) => ({
     set({ loadingPosts: true });
     postsPromise = (async () => {
       try {
-        const res = await getAdminPosts({ per_page: 500 });
-        const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
-        set({ allPosts: list, isFetchedPosts: true, loadingPosts: false });
+        // Fetch trang đầu để biết last_page
+        const first = await getAdminPosts({ per_page: 600, page: 1 });
+        const firstList = Array.isArray(first.data)
+          ? first.data
+          : first.data?.data || [];
+        const lastPage = first.data?.last_page ?? first.last_page ?? 1;
+
+        // Fetch song song các trang còn lại
+        let rest = [];
+        if (lastPage > 1) {
+          const pages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+          const results = await Promise.all(
+            pages.map((p) => getAdminPosts({ per_page: 600, page: p })),
+          );
+          rest = results.flatMap((res) =>
+            Array.isArray(res.data) ? res.data : res.data?.data || [],
+          );
+        }
+
+        set({
+          allPosts: [...firstList, ...rest],
+          isFetchedPosts: true,
+          loadingPosts: false,
+        });
       } catch (err) {
         console.error(err);
         set({ loadingPosts: false });
@@ -186,10 +207,25 @@ const useAdminStore = create((set, get) => ({
     set({ loadingCampaigns: true });
     campaignsPromise = (async () => {
       try {
-        const res = await getAdminCampaigns({ per_page: 500 });
-        const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
+        const first = await getAdminCampaigns({ per_page: 50, page: 1 });
+        const firstList = Array.isArray(first.data)
+          ? first.data
+          : first.data?.data || [];
+        const lastPage = first.data?.last_page ?? first.last_page ?? 1;
+
+        let rest = [];
+        if (lastPage > 1) {
+          const pages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+          const results = await Promise.all(
+            pages.map((p) => getAdminCampaigns({ per_page: 50, page: p })),
+          );
+          rest = results.flatMap((res) =>
+            Array.isArray(res.data) ? res.data : res.data?.data || [],
+          );
+        }
+
         set({
-          allCampaigns: list,
+          allCampaigns: [...firstList, ...rest],
           isFetchedCampaigns: true,
           loadingCampaigns: false,
         });
@@ -267,25 +303,40 @@ const useAdminStore = create((set, get) => ({
   campaignViolationSet: new Set(),
   postViolationSet: new Set(),
 
-  fetchViolationSets: async () => {
-    try {
-      const res = await getAdminPostReports({
-        trang_thai: "CHO_XU_LY",
-        limit: 1000,
-      });
-      const items = Array.isArray(res?.data) ? res.data : res?.data?.data || [];
-      const campSet = new Set();
-      const postSet = new Set();
-      items.forEach((it) => {
-        if (it.target_type === "CAMPAIGN" && it.target_id)
-          campSet.add(Number(it.target_id));
-        if (it.target_type === "POST" && it.target_id)
-          postSet.add(Number(it.target_id));
-      });
-      set({ campaignViolationSet: campSet, postViolationSet: postSet });
-    } catch (err) {
-      console.error(err);
-    }
+  fetchViolationSets: async (force = false) => {
+    if (!force && get().isFetchedViolations) return;
+    if (violationsPromise) return violationsPromise; // ← promise guard
+
+    violationsPromise = (async () => {
+      try {
+        const res = await getAdminPostReports({
+          trang_thai: "CHO_XU_LY",
+          limit: 1000,
+        });
+        const items = Array.isArray(res?.data)
+          ? res.data
+          : res?.data?.data || [];
+        const campSet = new Set();
+        const postSet = new Set();
+        items.forEach((it) => {
+          if (it.target_type === "CAMPAIGN" && it.target_id)
+            campSet.add(Number(it.target_id));
+          if (it.target_type === "POST" && it.target_id)
+            postSet.add(Number(it.target_id));
+        });
+        set({
+          campaignViolationSet: campSet,
+          postViolationSet: postSet,
+          isFetchedViolations: true,
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        violationsPromise = null;
+      }
+    })();
+
+    return violationsPromise;
   },
 
   // ===== VIOLATIONS DETAIL (Modal hiện list vi phạm) =====
@@ -335,7 +386,7 @@ const useAdminStore = create((set, get) => ({
         await updateFraudAlert(alertId, data);
       }
       // Refresh violation sets
-      await get().fetchViolationSets();
+      await get().fetchViolationSets(true);
       return true;
     } catch (err) {
       console.error(err);
