@@ -364,7 +364,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3>{toChuc?.ten_to_chuc || "Tổ chức"}</h3>
-                      <p>{taiKhoan?.so_tai_khoan|| "---"}</p>
+                      <p>{taiKhoan?.so_tai_khoan || "---"}</p>
                     </div>
                   </div>
                   {stk && (
@@ -632,6 +632,25 @@ export default function ProfilePage() {
 
           {activeTab === "projects" && isOrganization && (
             <div className="profile-tab-content">
+              <div className="pcd-header">
+                <button
+                  className="pcd-create-btn"
+                  onClick={() => navigate("/chien-dich/tao-moi")}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Tạo chiến dịch mới
+                </button>
+              </div>
               {!myCampaigns || myCampaigns.length === 0 ? (
                 <div className="profile-empty">
                   <div className="profile-empty__icon">📂</div>
@@ -639,12 +658,6 @@ export default function ProfilePage() {
                   <p className="profile-empty__hint">
                     Tạo chiến dịch gây quỹ để bắt đầu
                   </p>
-                  <button
-                    className="profile-empty__btn"
-                    onClick={() => navigate("/chien-dich/tao-moi")}
-                  >
-                    + Tạo chiến dịch
-                  </button>
                 </div>
               ) : (
                 <div className="profile-campaigns">
@@ -693,10 +706,7 @@ export default function ProfilePage() {
                       };
                     })();
                     return (
-                      <div
-                        key={c.id}
-                        className="pcd-card"
-                      >
+                      <div key={c.id} className="pcd-card">
                         <div className="pcd-card__cover">
                           {c.hinh_anh ? (
                             <img src={c.hinh_anh} alt={c.ten_chien_dich} />
