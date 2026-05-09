@@ -67,3 +67,14 @@
     flex-wrap: wrap;
   }
 }
+
+.sus-reason-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(241, 245, 249, 0.8);
+  border: 1px solid rgba(241, 245, 249, 0.8);
+  color: #334155;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
