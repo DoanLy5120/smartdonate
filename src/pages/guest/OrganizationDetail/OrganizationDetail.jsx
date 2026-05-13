@@ -44,7 +44,9 @@ export default function OrganizationDetail() {
   }, [id]);
 
   const ORG = organizationDetail[id];
-  const campaigns = ORG?.chien_dichs || [];
+  const campaigns = (ORG?.chien_dichs || []).filter(
+    (c) => c.trang_thai !== "CHO_XU_LY" && c.trang_thai !== "TU_CHOI",
+  );
 
   const start = (page - 1) * PAGE_SIZE;
   const paginated = campaigns.slice(start, start + PAGE_SIZE);
