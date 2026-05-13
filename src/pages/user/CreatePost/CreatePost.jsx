@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Input, Button, notification, Popconfirm } from "antd";
 import {
@@ -14,6 +15,7 @@ import { FaHandsHoldingCircle } from "react-icons/fa6";
 import { MdAddLocationAlt } from "react-icons/md";
 import { GoNumber } from "react-icons/go";
 import usePostStore from "../../../store/postStore";
+import { uploadImages } from "../../../api/postService";
 import "./CreatePost.scss";
 
 const { TextArea } = Input;
@@ -29,6 +31,15 @@ export default function CreatePost() {
   const [images, setImages] = useState([]);
   const [preview, setPreview] = useState(null);
   const [dragging, setDragging] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStep, setSubmitStep] = useState(0);
+
+  const SUBMIT_STEPS = [
+    { icon: "🔍", label: "Kiểm tra dữ liệu..." },
+    { icon: "☁️", label: "Đang tải ảnh lên..." },
+    { icon: "✨", label: "AI đang tìm kiếm bài đăng gợi ý..." },
+    { icon: "✅", label: "Hoàn tất!" },
+  ];
   const fileRef = useRef(null);
 
   function handleFile(files) {
@@ -50,6 +61,9 @@ export default function CreatePost() {
       return;
     }
 
+    setSubmitting(true);
+    setSubmitStep(0); // Bước 0: kiểm tra dữ liệu
+
     const formData = new FormData();
     formData.append("tieu_de", title);
     formData.append("mo_ta", desc);
@@ -57,13 +71,18 @@ export default function CreatePost() {
     formData.append("dia_diem", location);
     formData.append("so_luong", quantity === "" ? 1 : Number(quantity));
 
-    images.forEach((img) => {
-      if (img.file) formData.append("hinh_anh[]", img.file);
-    });
-
     try {
+      if (images.length > 0) {
+        setSubmitStep(1); // Bước 1: upload ảnh
+        const uploadedUrls = await uploadImages(images.map((img) => img.file));
+        uploadedUrls.forEach((url) => formData.append("hinh_anh[]", url));
+      }
+
+      setSubmitStep(2); // Bước 2: AI xử lý / tạo bài
       const res = await createPost(formData);
+
       if (res) {
+        setSubmitStep(3); // Bước 3: hoàn tất
         notification.success({
           message: "Thành công",
           description: "Bài đăng của bạn đã được tạo!",
@@ -72,6 +91,8 @@ export default function CreatePost() {
       }
     } catch (err) {
       console.error(err);
+      setSubmitting(false);
+
       const errors = err?.response?.data?.errors;
       const message = err?.response?.data?.message;
 
@@ -99,6 +120,7 @@ export default function CreatePost() {
   }
 
   return (
+    <>
     <div className="cp-page">
       <div className="cp-modal">
         <div className="cp-modal__header">
@@ -312,5 +334,35 @@ export default function CreatePost() {
         </div>
       </div>
     </div>
+    {submitting && (
+        <div className="cp-submit-overlay">
+          <div className="cp-submit-card">
+            <div className="cp-submit-spinner" />
+            <p className="cp-submit-label">{SUBMIT_STEPS[submitStep].label}</p>
+            <p className="cp-submit-sub">Vui lòng không đóng trang</p>
+
+            <div className="cp-submit-steps">
+              {SUBMIT_STEPS.map((s, i) => (
+                <div
+                  key={i}
+                  className={`cp-submit-step ${
+                    i < submitStep
+                      ? "done"
+                      : i === submitStep
+                        ? "active"
+                        : "wait"
+                  }`}
+                >
+                  <span className="cp-submit-step__dot">
+                    {i < submitStep ? "✓" : s.icon}
+                  </span>
+                  <span>{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

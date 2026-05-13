@@ -21,6 +21,18 @@ export const createPost = async (formData) => {
   });
   return res.data;
 };
+// upload ảnh trước
+export const uploadImages = async (files) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("hinh_anh[]", file));
+
+  const res = await api.post("/upload-image", formData, {
+    // ← đổi axiosInstance thành api
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return res.data.urls;
+};
 
 // cập nhật bài đăng
 export const updatePost = async (id, formData) => {
@@ -80,7 +92,9 @@ export const searchPosts = async (params = {}) => {
 
 // Thêm sau searchPosts
 export const searchUsers = async (params = {}) => {
-  const res = await api.get(`/posts/search`, { params: { ...params, type: 'people' } });
+  const res = await api.get(`/posts/search`, {
+    params: { ...params, type: "people" },
+  });
   return res.data;
 };
 

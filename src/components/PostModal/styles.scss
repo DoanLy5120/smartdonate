@@ -80,7 +80,7 @@
   border: 1px solid #f0f0f0;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
   max-height: 92vh;
   display: flex;
   position: relative;
@@ -173,6 +173,7 @@
   &__meta {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 5px;
     margin-top: 2px;
   }

@@ -110,13 +110,6 @@ export default function PostDetailModal({ post, visible, onClose }) {
   const { toggleLike, posts } = usePostStore();
   const postFromStore = posts.find((p) => p.id === post?.id);
   const liked = postFromStore?.liked ?? post?.liked ?? false;
-  const likeCount =
-    postFromStore?.so_luot_thich ?? post?.likeCount ?? post?.so_luot_thich ?? 0;
-  const cmtCount =
-    postFromStore?.so_binh_luan ??
-    post?.commentCount ??
-    post?.so_binh_luan ??
-    0;
   const [activePostId, setActivePostId] = useState(null);
   const { fetchPostDetail, postDetail } = usePostStore();
   const [commentText, setCommentText] = useState("");
@@ -170,8 +163,8 @@ export default function PostDetailModal({ post, visible, onClose }) {
                 name: fetchedPost.nguoi_dung?.ho_ten,
                 avatar: fetchedPost.nguoi_dung?.ho_ten?.charAt(0) || "?",
                 avatar_url:
-                  p.nguoi_dung?.anh_dai_dien ||
-                  p.nguoi_dung?.avatar_url ||
+                  fetchedPost.nguoi_dung?.anh_dai_dien ||
+                  fetchedPost.nguoi_dung?.avatar_url ||
                   null,
                 color: "#1890ff",
               },
@@ -184,11 +177,22 @@ export default function PostDetailModal({ post, visible, onClose }) {
               nguoi_dung_id: fetchedPost.nguoi_dung?.id,
               liked: fetchedPost.da_thich ?? false,
               so_luot_thich: fetchedPost.so_luot_thich ?? 0,
+              so_binh_luan: fetchedPost.so_binh_luan ?? 0,
               aiSuggestions: [],
             }
           : null;
 
   const displayPost = activePost || post;
+  const likeCount =
+    displayPost?.so_luot_thich ||
+    displayPost?.likeCount ||
+    postFromStore?.so_luot_thich ||
+    0;
+  const cmtCount =
+    displayPost?.so_binh_luan ||
+    displayPost?.commentCount ||
+    postFromStore?.so_binh_luan ||
+    0;
 
   const statusLabelMap = {
     CON_TANG: "Còn tặng",

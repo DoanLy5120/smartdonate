@@ -368,6 +368,7 @@ const usePostStore = create((set, get) => ({
     const key = String(postId);
 
     if (get().relatedStatus[key] === "loading") return;
+    if (get().relatedStatus[key] === "ok") return get().related[key];
 
     set((state) => ({
       relatedStatus: {

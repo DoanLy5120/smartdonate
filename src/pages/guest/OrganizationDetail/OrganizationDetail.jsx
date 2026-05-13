@@ -79,11 +79,18 @@ export default function OrganizationDetail() {
       };
     }
 
-    if (c.trang_thai === "KET_THUC") {
+    if (c.trang_thai === "DA_KET_THUC") {
       return {
         type: "danger",
         icon: <FiInfo size={14} />,
         label: "Kết thúc",
+      };
+    }
+    if (c.trang_thai === "TU_CHOI") {
+      return {
+        type: "danger",
+        icon: <FiInfo size={14} />,
+        label: "Từ chối",
       };
     }
 

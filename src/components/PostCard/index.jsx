@@ -207,6 +207,7 @@ export default function PostCard({ post, style, onDelete }) {
               nguoi_dung_id: fetchedPost.nguoi_dung?.id,
               liked: fetchedPost.da_thich ?? false,
               so_luot_thich: fetchedPost.so_luot_thich ?? 0,
+              so_binh_luan: fetchedPost.so_binh_luan ?? 0,
               aiSuggestions: [],
             }
           : null;
