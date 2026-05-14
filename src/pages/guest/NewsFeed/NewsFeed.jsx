@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "antd";
 import { FiSearch, FiGift, FiPackage, FiPlus } from "react-icons/fi";
@@ -6,10 +6,9 @@ import { BsBagHeartFill } from "react-icons/bs";
 import { FaPeopleCarry } from "react-icons/fa";
 import { MdFeed } from "react-icons/md";
 import Header from "../../../components/Header/index";
-import Menu from "../../../components/Menu/index.jsx"
+import Menu from "../../../components/Menu/index.jsx";
 import PostCard from "../../../components/PostCard/index.jsx";
 import AddressPromptModal from "../../../components/AddressPromptModal/index.jsx";
-import { shouldShowAddressPrompt } from "../../../components/AddressPromptModal/addressPromptUtils.js";
 import usePosts from "../../../hooks/usePosts";
 import usePostStore from "../../../store/postStore";
 import useChatStore from "../../../store/chatStore";
@@ -18,17 +17,14 @@ import "./NewsFeed.scss";
 
 export default function NewsFeed() {
   const navigate = useNavigate();
+  const feedRef = useRef(null);
   const [tab, setTab] = useState("cho");
   const user = useAuthStore((s) => s.user);
-  const [showAddressModal, setShowAddressModal] = useState(
-    () => !!(user?.id && shouldShowAddressPrompt(user.id)),
-  );
-
   const fetchMatches = usePostStore((s) => s.fetchMatches);
   const matchesMap = usePostStore((s) => s.matches);
   const myUserId = useAuthStore((s) => Number(s.user?.id || 0));
   const isLoggedIn = !!user;
-
+  const [showAddressModal, setShowAddressModal] = useState(false);
   const communityStats = usePostStore((s) => s.communityStats);
   const fetchCommunityStats = usePostStore((s) => s.fetchCommunityStats);
 
@@ -37,12 +33,18 @@ export default function NewsFeed() {
 
   const params = useMemo(
     () => ({
-      loai_bai: tab.toUpperCase()
+      loai_bai: tab.toUpperCase(),
     }),
     [tab],
   );
 
   const { posts, loading, hasMore, loadMore } = usePosts(params);
+
+  useEffect(() => {
+    if (user?.can_show_address_popup) {
+      setShowAddressModal(true);
+    }
+  }, [user?.can_show_address_popup]);
 
   useEffect(() => {
     fetchCommunityStats();
@@ -104,18 +106,21 @@ export default function NewsFeed() {
   });
 
   useEffect(() => {
+    const el = feedRef.current;
+    if (!el) return;
+
     const handleScroll = () => {
       if (
-        window.innerHeight + window.scrollY >=
-          document.body.offsetHeight - 200 &&
+        el.scrollTop + el.clientHeight >= el.scrollHeight - 200 &&
         hasMore &&
         !loading
       ) {
         loadMore();
       }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
   }, [hasMore, loading, loadMore]);
 
   const handleOpenChat = (conv) => {
@@ -124,18 +129,15 @@ export default function NewsFeed() {
 
   return (
     <>
-    <Header />
-    <Menu />
+      <Header />
+      <Menu />
       {showAddressModal && (
-        <AddressPromptModal
-          userId={user.id}
-          onClose={() => setShowAddressModal(false)}
-        />
+        <AddressPromptModal onClose={() => setShowAddressModal(false)} />
       )}
       <div className="nf-page">
         <div className="nf-layout">
           {/* ── Feed ── */}
-          <div className="nf-feed-col">
+          <div className="nf-feed-col" ref={feedRef}>
             <div className="nf-feed">
               <div className="nf-toolbar">
                 <div className="nf-toolbar__tabs">
@@ -169,6 +171,24 @@ export default function NewsFeed() {
                     style={{ animationDelay: `${i * 0.08}s` }}
                   />
                 ))}
+                {loading && (
+                  <>
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="nf-skeleton-card">
+                        <div className="nf-skeleton-header">
+                          <div className="nf-skeleton-avatar" />
+                          <div className="nf-skeleton-meta">
+                            <div className="nf-skeleton-line nf-skeleton-line--short" />
+                            <div className="nf-skeleton-line nf-skeleton-line--xshort" />
+                          </div>
+                        </div>
+                        <div className="nf-skeleton-line" />
+                        <div className="nf-skeleton-line nf-skeleton-line--medium" />
+                        <div className="nf-skeleton-image" />
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
           </div>

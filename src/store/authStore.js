@@ -27,7 +27,7 @@ const useAuthStore = create((set, get) => {
     roles: rolesFromStorage,
     isFetchedMe: false,
 
-    setAuth: (data) => {
+    setAuth: async (data) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("roles", JSON.stringify(data.roles || []));
@@ -36,8 +36,11 @@ const useAuthStore = create((set, get) => {
         user: data.user,
         token: data.token,
         roles: data.roles || [],
-        isFetchedMe: true,
+        isFetchedMe: false,
       });
+
+      // Gọi fetchMe ngay để lấy can_show_address_popup
+      await get().fetchMe();
     },
 
     setUser: (user, roles = []) => {
@@ -74,7 +77,13 @@ const useAuthStore = create((set, get) => {
         try {
           const res = await getMeAPI();
 
-          get().setUser(res.data.user, res.data.roles);
+          get().setUser(
+            {
+              ...res.data.user,
+              can_show_address_popup: res.data.can_show_address_popup,
+            },
+            res.data.roles,
+          );
         } catch (err) {
           console.log("Lỗi lấy user:", err);
           if (err.response?.status === 401) {

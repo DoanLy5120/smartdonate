@@ -123,6 +123,7 @@ export default function PostDetailModal({ post, visible, onClose }) {
 
   const {
     comments: postComments,
+    loading: loadingComments,
     createComment,
     deleteComment,
   } = useComments(post?.id);
@@ -515,43 +516,59 @@ export default function PostDetailModal({ post, visible, onClose }) {
         <div className="pdc__right">
           <div className="pdc__comments-area">
             <div className="pdc__comments-list">
-              {postComments.map((comment) => (
-                <div key={comment.id} className="pdc__comment-thread">
-                  <CommentBubble
-                    comment={comment}
-                    onReply={handleReply}
-                    onDelete={handleDeleteComment}
-                    postOwnerId={post?.nguoi_dung_id}
-                  />
-                  {comment.replies.length > 0 && (
-                    <div className="pdc__replies-wrap">
-                      <button
-                        className="pdc__toggle-replies"
-                        onClick={() => toggleReplies(comment.id)}
-                      >
-                        <FiCornerDownRight size={13} />
-                        {expandedReplies[comment.id]
-                          ? "Ẩn phản hồi"
-                          : `Xem ${comment.replies.length} phản hồi`}
-                      </button>
-                      {expandedReplies[comment.id] && (
-                        <div className="pdc__replies">
-                          {comment.replies.map((reply) => (
-                            <CommentBubble
-                              key={reply.id}
-                              comment={reply}
-                              onReply={handleReply}
-                              onDelete={handleDeleteComment}
-                              postOwnerId={post?.nguoi_dung_id}
-                              isReply
-                            />
-                          ))}
-                        </div>
-                      )}
+              {loadingComments ? (
+                <div className="pdc__comments-loading">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="pdc__comment-skeleton">
+                      <div className="pdc__skeleton-avatar" />
+                      <div className="pdc__skeleton-body">
+                        <div className="pdc__skeleton-line pdc__skeleton-line--short" />
+                        <div className="pdc__skeleton-line" />
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
+              ) : postComments.length === 0 ? (
+                <div className="pdc__comments-empty">Chưa có bình luận nào</div>
+              ) : (
+                postComments.map((comment) => (
+                  <div key={comment.id} className="pdc__comment-thread">
+                    <CommentBubble
+                      comment={comment}
+                      onReply={handleReply}
+                      onDelete={handleDeleteComment}
+                      postOwnerId={post?.nguoi_dung_id}
+                    />
+                    {comment.replies.length > 0 && (
+                      <div className="pdc__replies-wrap">
+                        <button
+                          className="pdc__toggle-replies"
+                          onClick={() => toggleReplies(comment.id)}
+                        >
+                          <FiCornerDownRight size={13} />
+                          {expandedReplies[comment.id]
+                            ? "Ẩn phản hồi"
+                            : `Xem ${comment.replies.length} phản hồi`}
+                        </button>
+                        {expandedReplies[comment.id] && (
+                          <div className="pdc__replies">
+                            {comment.replies.map((reply) => (
+                              <CommentBubble
+                                key={reply.id}
+                                comment={reply}
+                                onReply={handleReply}
+                                onDelete={handleDeleteComment}
+                                postOwnerId={post?.nguoi_dung_id}
+                                isReply
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

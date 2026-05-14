@@ -62,4 +62,8 @@ export const logoutAPI = () => {
   return axiosClient.post("/logout");
 };
 
+export const hideAddressPopupAPI = () => {
+  return axiosClient.post("/user/hide-address-popup");
+};
+
 export default axiosClient;

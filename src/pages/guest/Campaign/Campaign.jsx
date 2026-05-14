@@ -282,14 +282,6 @@ export default function Campaign() {
     );
   };
 
-  if (campLoading) {
-    return (
-      <div className="campaign-page">
-        <p>Đang tải chiến dịch...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="campaign-page">
       {/* ── Sidebar ── */}
@@ -348,39 +340,53 @@ export default function Campaign() {
               Xem tất cả <FiChevronRight size={14} />
             </a>
           </div>
-
-          <div className="camp-section__carousel-wrap">
-            <Carousel
-              ref={carouselRef}
-              dots={false}
-              infinite={false}
-              draggable
-              slidesToShow={4}
-              slidesToScroll={1}
-              responsive={[
-                { breakpoint: 1200, settings: { slidesToShow: 3 } },
-                { breakpoint: 780, settings: { slidesToShow: 2 } },
-              ]}
-            >
-              {featured.map((c, i) => (
-                <div key={c.id} className="camp-section__slide">
-                  <CampaignCard campaign={c} index={i} />
+          {campLoading ? (
+            <div className="camp-sk-carousel">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="camp-sk-card">
+                  <div className="camp-sk-image" />
+                  <div className="camp-sk-body">
+                    <div className="camp-sk-line" />
+                    <div className="camp-sk-line camp-sk-line--short" />
+                    <div className="camp-sk-line camp-sk-line--xshort" />
+                  </div>
                 </div>
               ))}
-            </Carousel>
-            <button
-              className="camp-section__nav camp-section__nav--prev"
-              onClick={() => carouselRef.current?.prev?.()}
-            >
-              <FiChevronLeft size={20} />
-            </button>
-            <button
-              className="camp-section__nav camp-section__nav--next"
-              onClick={() => carouselRef.current?.next?.()}
-            >
-              <FiChevronRight size={20} />
-            </button>
-          </div>
+            </div>
+          ) : (
+            <div className="camp-section__carousel-wrap">
+              <Carousel
+                ref={carouselRef}
+                dots={false}
+                infinite={false}
+                draggable
+                slidesToShow={4}
+                slidesToScroll={1}
+                responsive={[
+                  { breakpoint: 1200, settings: { slidesToShow: 3 } },
+                  { breakpoint: 780, settings: { slidesToShow: 2 } },
+                ]}
+              >
+                {featured.map((c, i) => (
+                  <div key={c.id} className="camp-section__slide">
+                    <CampaignCard campaign={c} index={i} />
+                  </div>
+                ))}
+              </Carousel>
+              <button
+                className="camp-section__nav camp-section__nav--prev"
+                onClick={() => carouselRef.current?.prev?.()}
+              >
+                <FiChevronLeft size={20} />
+              </button>
+              <button
+                className="camp-section__nav camp-section__nav--next"
+                onClick={() => carouselRef.current?.next?.()}
+              >
+                <FiChevronRight size={20} />
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Tổ chức từ thiện */}
