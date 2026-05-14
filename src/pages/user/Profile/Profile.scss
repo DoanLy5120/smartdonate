@@ -1942,3 +1942,61 @@
     box-shadow: 0 2px 8px rgba(45, 184, 114, 0.3);
   }
 }
+
+// Skeleton shimmer animation
+@keyframes shimmer {
+  0% {
+    background-position: -600px 0;
+  }
+  100% {
+    background-position: 600px 0;
+  }
+}
+
+.skeleton-shine {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+.pcd-card--skeleton {
+  pointer-events: none;
+}
+
+.pcd-skeleton__cover {
+  width: 100%;
+  height: 160px;
+  border-radius: 8px 8px 0 0;
+}
+
+.pcd-skeleton__title {
+  height: 18px;
+  width: 65%;
+  margin-bottom: 12px;
+}
+
+.pcd-skeleton__bar {
+  height: 8px;
+  width: 100%;
+  margin-bottom: 14px;
+  border-radius: 4px;
+}
+
+.pcd-skeleton__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.pcd-skeleton__amount {
+  height: 14px;
+  width: 40%;
+}
+
+.pcd-skeleton__btn {
+  height: 28px;
+  width: 90px;
+  border-radius: 6px;
+}

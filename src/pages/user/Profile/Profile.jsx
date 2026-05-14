@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { notification } from "antd";
 import useAuthStore from "../../../store/authStore";
 import useProfile from "../../../hooks/useProfile";
@@ -10,6 +10,7 @@ import banner from "../../../assets/canhbao.png";
 import Header from "../../../components/Header/index.jsx";
 import Footer from "../../../components/Footer/index.jsx";
 import PostCard from "../../../components/PostCard";
+import useProfileStore from "../../../store/profileStore";
 import "./Profile.scss";
 import useWithdrawRequestStore from "../../../store/withdrawRequestStore";
 
@@ -18,6 +19,7 @@ export default function ProfilePage() {
   const { user } = useAuthStore();
   const storeRoles = useAuthStore((s) => s.roles);
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("history");
   const [likedMap, setLikedMap] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
@@ -51,6 +53,7 @@ export default function ProfilePage() {
     donationsTotal,
     postsTotal,
     campaignsTotal,
+    refetchCampaigns,
   } = useProfile();
 
   const isOrganization = Array.isArray(storeRoles)
@@ -116,6 +119,21 @@ export default function ProfilePage() {
     loadingCampaigns,
     loadMoreCampaigns,
   ]);
+
+  useEffect(() => {
+    if (!location.state?.refreshCampaigns) return;
+
+    // Xóa data cũ + chuyển tab ngay lập tức
+    useProfileStore.setState({
+      myCampaigns: [],
+      campaignsTotal: 0,
+      isFetchedCampaigns: false,
+    });
+    setActiveTab("projects");
+
+    refetchCampaigns();
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state]);
 
   const handleWithdrawRequest = (campaign, e) => {
     e.stopPropagation();
@@ -651,7 +669,23 @@ export default function ProfilePage() {
                   Tạo chiến dịch mới
                 </button>
               </div>
-              {!myCampaigns || myCampaigns.length === 0 ? (
+              {loadingCampaigns && myCampaigns.length === 0 ? (
+                <div className="profile-campaigns">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="pcd-card pcd-card--skeleton">
+                      <div className="pcd-skeleton__cover skeleton-shine" />
+                      <div className="pcd-card__body">
+                        <div className="pcd-skeleton__title skeleton-shine" />
+                        <div className="pcd-skeleton__bar skeleton-shine" />
+                        <div className="pcd-skeleton__row">
+                          <div className="pcd-skeleton__amount skeleton-shine" />
+                          <div className="pcd-skeleton__btn skeleton-shine" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : !myCampaigns || myCampaigns.length === 0 ? (
                 <div className="profile-empty">
                   <div className="profile-empty__icon">📂</div>
                   <p>Chưa có chiến dịch nào</p>

@@ -14,7 +14,7 @@ import {
   FiDollarSign,
 } from "react-icons/fi";
 import LocationPicker from "../../../components/LocationPicker/index";
-import useCategories from "../../../hooks/useCategories"; 
+import useCategories from "../../../hooks/useCategories";
 import useCampaignStore from "../../../store/campaignStore";
 import "./CreateCampaign.scss";
 
@@ -47,6 +47,22 @@ export default function CreateCampaign() {
     lng: null,
   });
 
+  // ── Errors ──
+  const [errors, setErrors] = useState({});
+
+  const setError = (field, msg) =>
+    setErrors((prev) => ({ ...prev, [field]: msg }));
+
+  const clearError = (field) => setErrors((prev) => ({ ...prev, [field]: "" }));
+
+  // Component hiển thị lỗi inline
+  const ErrMsg = ({ field }) =>
+    errors[field] ? (
+      <div className="cc-field__error">
+        <FiX size={11} /> {errors[field]}
+      </div>
+    ) : null;
+
   // ── Images ──
   function handleFile(e) {
     const files = Array.from(e.target.files);
@@ -57,24 +73,30 @@ export default function CreateCampaign() {
     }));
     setImages((prev) => [...prev, ...newImgs]);
     if (!previewImg && newImgs.length) setPreviewImg(newImgs[0].url);
+    clearError("hinh_anh");
   }
 
   function removeImage(idx) {
     setImages((prev) => {
       const next = prev.filter((_, i) => i !== idx);
       if (previewImg === prev[idx].url) setPreviewImg(next[0]?.url ?? null);
+      if (next.length === 0)
+        setError("hinh_anh", "Vui lòng tải lên ít nhất 1 ảnh!");
       return next;
     });
   }
 
   // ── Validate step 1 ──
   function handleNext() {
-    if (!form.ten_chien_dich.trim()) {
-      notification.warning({ message: "Vui lòng nhập tên chiến dịch!" });
-      return;
-    }
-    if (!form.danh_muc_id) {
-      notification.warning({ message: "Vui lòng chọn danh mục!" });
+    const newErrs = {};
+    if (!form.ten_chien_dich.trim())
+      newErrs.ten_chien_dich = "Vui lòng nhập tên chiến dịch!";
+    if (!form.danh_muc_id) newErrs.danh_muc_id = "Vui lòng chọn danh mục!";
+    if (images.length === 0)
+      newErrs.hinh_anh = "Vui lòng tải lên ít nhất 1 ảnh!";
+
+    if (Object.keys(newErrs).length > 0) {
+      setErrors((prev) => ({ ...prev, ...newErrs }));
       return;
     }
     setStep(2);
@@ -88,20 +110,16 @@ export default function CreateCampaign() {
 
   // ── Submit ──
   async function handleSubmit() {
-    if (!form.muc_tieu_tien || Number(form.muc_tieu_tien) <= 0) {
-      notification.warning({ message: "Vui lòng nhập mục tiêu tiền hợp lệ!" });
-      return;
-    }
-    if (!form.ngay_ket_thuc) {
-      notification.warning({ message: "Vui lòng chọn ngày kết thúc!" });
-      return;
-    }
-    if (!form.lat || !form.lng) {
-      notification.warning({ message: "Vui lòng chọn vị trí trên bản đồ!" });
-      return;
-    }
-    if (images.length === 0) {
-      notification.warning({ message: "Vui lòng tải lên ít nhất 1 ảnh!" });
+    const newErrs = {};
+    if (!form.muc_tieu_tien || Number(form.muc_tieu_tien) < 10000)
+      newErrs.muc_tieu_tien = "Mục tiêu tối thiểu 10.000đ!";
+    if (!form.ngay_ket_thuc)
+      newErrs.ngay_ket_thuc = "Vui lòng chọn ngày kết thúc!";
+    if (!form.lat || !form.lng)
+      newErrs.vi_tri = "Vui lòng chọn vị trí trên bản đồ!";
+
+    if (Object.keys(newErrs).length > 0) {
+      setErrors((prev) => ({ ...prev, ...newErrs }));
       return;
     }
 
@@ -110,7 +128,7 @@ export default function CreateCampaign() {
     formData.append("danh_muc_id", form.danh_muc_id);
     formData.append("mo_ta", form.mo_ta);
     formData.append("muc_tieu_tien", form.muc_tieu_tien);
-    formData.append("ngay_ket_thuc", form.ngay_ket_thuc.format("YYYY-MM-DD")); 
+    formData.append("ngay_ket_thuc", form.ngay_ket_thuc.format("YYYY-MM-DD"));
     formData.append("vi_tri", form.vi_tri);
     formData.append("lat", form.lat);
     formData.append("lng", form.lng);
@@ -121,25 +139,33 @@ export default function CreateCampaign() {
     try {
       await createCampaign(formData);
       notification.success({
-        message: "Tạo chiến dịch thành công! ",
+        message: "Tạo chiến dịch thành công!",
         description: "Chiến dịch đang chờ admin xét duyệt.",
       });
-      navigate("/chien-dich");
+      navigate("/profile", { state: { refreshCampaigns: true } });
     } catch (err) {
-      const errors = err?.response?.data?.errors;
+      const serverErrors = err?.response?.data?.errors;
       const message = err?.response?.data?.message;
-      if (errors) {
-        Object.entries(errors).forEach(([field, errArr]) => {
-          notification.warning({
-            message: `Lỗi: ${field}`,
-            description: errArr[0],
-          });
+      if (serverErrors) {
+        // Map lỗi server vào đúng field
+        const fieldMap = {
+          ten_chien_dich: "ten_chien_dich",
+          danh_muc_id: "danh_muc_id",
+          mo_ta: "mo_ta",
+          muc_tieu_tien: "muc_tieu_tien",
+          ngay_ket_thuc: "ngay_ket_thuc",
+          vi_tri: "vi_tri",
+          "hinh_anh[]": "hinh_anh",
+        };
+        const mapped = {};
+        Object.entries(serverErrors).forEach(([field, errArr]) => {
+          const key = fieldMap[field] || field;
+          mapped[key] = errArr[0];
         });
-      } else if (message) {
-        notification.error({ message });
+        setErrors((prev) => ({ ...prev, ...mapped }));
       } else {
         notification.error({
-          message: "Tạo chiến dịch thất bại, vui lòng thử lại!",
+          message: message || "Tạo chiến dịch thất bại, vui lòng thử lại!",
         });
       }
     }
@@ -156,7 +182,7 @@ export default function CreateCampaign() {
         </p>
       </div>
 
-      {/* Stepper — giữ nguyên */}
+      {/* Stepper */}
       <div className="cc-stepper">
         <div className="cc-stepper__edge" />
         {STEPS.map((s, i) => (
@@ -206,30 +232,34 @@ export default function CreateCampaign() {
                 Tên chiến dịch <span className="cc-field__required">*</span>
               </label>
               <Input
-                className="cc-field__input"
+                className={`cc-field__input${errors.ten_chien_dich ? " cc-field__input--error" : ""}`}
                 placeholder="Nhập tên chiến dịch..."
                 value={form.ten_chien_dich}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, ten_chien_dich: e.target.value }))
-                }
+                onChange={(e) => {
+                  setForm((p) => ({ ...p, ten_chien_dich: e.target.value }));
+                  if (e.target.value.trim()) clearError("ten_chien_dich");
+                }}
                 prefix={<FiInfo size={15} className="cc-field__prefix-icon" />}
               />
+              <ErrMsg field="ten_chien_dich" />
             </div>
 
-            {/* Danh mục từ API — render dạng grid card như RegisterOrg */}
             <div className="cc-field">
               <label className="cc-field__label">
                 Danh mục <span className="cc-field__required">*</span>
               </label>
-              <div className="cc-category-grid">
+              <div
+                className={`cc-category-grid${errors.danh_muc_id ? " cc-category-grid--error" : ""}`}
+              >
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
                     type="button"
                     className={`cc-category-card${form.danh_muc_id === cat.id ? " active" : ""}`}
-                    onClick={() =>
-                      setForm((p) => ({ ...p, danh_muc_id: cat.id }))
-                    }
+                    onClick={() => {
+                      setForm((p) => ({ ...p, danh_muc_id: cat.id }));
+                      clearError("danh_muc_id");
+                    }}
                   >
                     {cat.hinh_anh && (
                       <img
@@ -249,6 +279,7 @@ export default function CreateCampaign() {
                   </button>
                 ))}
               </div>
+              <ErrMsg field="danh_muc_id" />
             </div>
 
             <div className="cc-field">
@@ -302,7 +333,7 @@ export default function CreateCampaign() {
                 </div>
               ) : (
                 <div
-                  className="cc-upload__zone"
+                  className={`cc-upload__zone${errors.hinh_anh ? " cc-upload__zone--error" : ""}`}
                   onClick={() => fileRef.current?.click()}
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -321,7 +352,10 @@ export default function CreateCampaign() {
                       name: f.name,
                     }));
                     setImages((prev) => [...prev, ...newImgs]);
-                    if (newImgs.length) setPreviewImg(newImgs[0].url);
+                    if (newImgs.length) {
+                      setPreviewImg(newImgs[0].url);
+                      clearError("hinh_anh");
+                    }
                   }}
                 >
                   <div className="cc-upload__zone-icon">
@@ -341,6 +375,7 @@ export default function CreateCampaign() {
                 style={{ display: "none" }}
                 onChange={handleFile}
               />
+              <ErrMsg field="hinh_anh" />
             </div>
 
             <div className="cc-form__actions cc-form__actions--right">
@@ -364,27 +399,48 @@ export default function CreateCampaign() {
                 Mục tiêu cần đạt <span className="cc-field__required">*</span>
               </label>
               <Input
-                className="cc-field__input"
+                className={`cc-field__input${errors.muc_tieu_tien ? " cc-field__input--error" : ""}`}
                 placeholder="Nhập số tiền cần đạt..."
-                value={form.muc_tieu_tien}
-                onChange={(e) =>
-                  setForm((p) => ({
-                    ...p,
-                    muc_tieu_tien: e.target.value.replace(/\D/g, ""),
-                  }))
+                inputMode="numeric"
+                value={
+                  form.muc_tieu_tien
+                    ? Number(form.muc_tieu_tien).toLocaleString("vi-VN")
+                    : ""
                 }
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  setForm((p) => ({ ...p, muc_tieu_tien: val }));
+                  if (!val) setError("muc_tieu_tien", "Vui lòng nhập số tiền!");
+                  else if (Number(val) < 10000)
+                    setError("muc_tieu_tien", "Mục tiêu tối thiểu 10.000đ!");
+                  else clearError("muc_tieu_tien");
+                }}
+                onKeyDown={(e) => {
+                  // Chỉ cho phép: số, Backspace, Delete, Tab, mũi tên
+                  const allowed = [
+                    "Backspace",
+                    "Delete",
+                    "Tab",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "ArrowUp",
+                    "ArrowDown",
+                  ];
+                  if (!/^\d$/.test(e.key) && !allowed.includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
                 prefix={
                   <FiDollarSign size={15} className="cc-field__prefix-icon" />
                 }
                 suffix={<span className="cc-field__suffix">VNĐ</span>}
-                type="number"
-                min={1}
               />
-              {form.muc_tieu_tien && (
+              {form.muc_tieu_tien && Number(form.muc_tieu_tien) >= 10000 && (
                 <div className="cc-field__hint">
                   ≈ {Number(form.muc_tieu_tien).toLocaleString("vi-VN")} đồng
                 </div>
               )}
+              <ErrMsg field="muc_tieu_tien" />
             </div>
 
             <div className="cc-field">
@@ -392,13 +448,17 @@ export default function CreateCampaign() {
                 Thời gian kết thúc <span className="cc-field__required">*</span>
               </label>
               <DatePicker
-                className="cc-field__datepicker"
+                className={`cc-field__datepicker${errors.ngay_ket_thuc ? " cc-field__input--error" : ""}`}
                 placeholder="Chọn thời gian"
                 format="DD/MM/YYYY"
                 suffixIcon={<FiCalendar size={15} />}
                 disabledDate={(d) => d && d.isBefore(new Date(), "day")}
-                onChange={(v) => setForm((p) => ({ ...p, ngay_ket_thuc: v }))}
+                onChange={(v) => {
+                  setForm((p) => ({ ...p, ngay_ket_thuc: v }));
+                  if (v) clearError("ngay_ket_thuc");
+                }}
               />
+              <ErrMsg field="ngay_ket_thuc" />
             </div>
 
             <div className="cc-field">
@@ -408,9 +468,10 @@ export default function CreateCampaign() {
               </label>
               <LocationPicker
                 value={{ address: form.vi_tri, lat: form.lat, lng: form.lng }}
-                onChange={({ address, lat, lng }) =>
-                  setForm((p) => ({ ...p, vi_tri: address, lat, lng }))
-                }
+                onChange={({ address, lat, lng }) => {
+                  setForm((p) => ({ ...p, vi_tri: address, lat, lng }));
+                  if (lat && lng) clearError("vi_tri");
+                }}
               />
               {form.lat && form.lng && (
                 <div className="cc-field__hint" style={{ color: "#52c41a" }}>
@@ -418,6 +479,7 @@ export default function CreateCampaign() {
                   {form.lng.toFixed(5)}
                 </div>
               )}
+              <ErrMsg field="vi_tri" />
             </div>
 
             <div className="cc-form__actions cc-form__actions--split">

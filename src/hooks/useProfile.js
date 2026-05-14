@@ -54,6 +54,10 @@ const useProfile = () => {
     loadMoreDonations: () => fetchDonations(true),
     loadMorePosts: () => fetchMyPosts(true),
     loadMoreCampaigns: () => fetchMyCampaigns(true),
+    refetchCampaigns: () => {
+      useProfileStore.setState({ isFetchedCampaigns: false });
+      fetchMyCampaigns(false);
+    },
     handleUpdateProfile,
     handleChangePassword,
     handleUpdateDiaChi,
