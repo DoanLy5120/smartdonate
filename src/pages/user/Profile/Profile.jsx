@@ -803,7 +803,7 @@ export default function ProfilePage() {
                                       </span>
                                     )}
                                   </button>
-                                  {c.trang_thai === "HOAT_DONG" && (
+                                  {["HOAT_DONG", "HOAN_THANH", "DA_KET_THUC"].includes(c.trang_thai)  && (
                                     <button
                                       className="pcd-card__menu-item pcd-card__menu-item--withdraw"
                                       onClick={(e) =>

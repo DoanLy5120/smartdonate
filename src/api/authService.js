@@ -55,7 +55,7 @@ export const getMeAPI = () => {
 
 // GOOGLE LOGIN
 export const loginGoogleAPI = () => {
-  window.location.href = `${API_URL}/auth/google`;
+  window.location.href = `${API_URL}auth/google`;
 };
 
 export const logoutAPI = () => {

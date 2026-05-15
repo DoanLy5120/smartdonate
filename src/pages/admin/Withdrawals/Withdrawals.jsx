@@ -45,6 +45,13 @@ function fmtVnd(n) {
   return Number(n).toLocaleString("vi-VN") + "đ";
 }
 
+// Lấy local datetime theo format YYYY-MM-DDTHH:MM (không bị UTC)
+const getLocalDateTime = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now - offset).toISOString().slice(0, 16);
+};
+
 export default function Withdrawals() {
   const [tab, setTab] = useState("CHO_DUYET");
   const [loading, setLoading] = useState(false);
@@ -58,7 +65,7 @@ export default function Withdrawals() {
   // Confirm form
   const [confirmForm, setConfirmForm] = useState({
     ma_giao_dich_ngan_hang: "",
-    ngay_giao_dich: new Date().toISOString().slice(0, 16),
+    ngay_giao_dich: getLocalDateTime(),
     ghi_chu_admin: "",
   });
   const [rejectReason, setRejectReason] = useState("");
@@ -100,7 +107,7 @@ export default function Withdrawals() {
   const openConfirm = (item) => {
     setConfirmForm({
       ma_giao_dich_ngan_hang: "",
-      ngay_giao_dich: new Date().toISOString().slice(0, 16),
+      ngay_giao_dich: getLocalDateTime(),
       ghi_chu_admin: "",
     });
     setConfirmTarget(item);
@@ -121,7 +128,11 @@ export default function Withdrawals() {
     }
     setSubmitting(true);
     try {
-      await confirmWithdrawRequest(confirmTarget.id, confirmForm);
+      const payload = {
+        ...confirmForm,
+        ngay_giao_dich: confirmForm.ngay_giao_dich + ":00+07:00",
+      };
+      await confirmWithdrawRequest(confirmTarget.id, payload);
       notification.success({
         message: "Đã xác nhận giao dịch!",
         placement: "topRight",
