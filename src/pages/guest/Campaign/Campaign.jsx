@@ -479,7 +479,7 @@ export default function Campaign() {
                         alt={item.ten_chien_dich}
                         onError={(e) =>
                           (e.target.src =
-                            "https://via.placeholder.com/150?text=No+Image")
+                            "https://placehold.co/150?text=No+Image")
                         }
                       />
                       <div className="ending-item__thumb-badge">#{i + 1}</div>
