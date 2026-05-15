@@ -113,22 +113,6 @@ export default function ViolationsModal({ target, onClose }) {
                       </div>
                     )}
 
-                    <div className="vio-item__actions">
-                      <button
-                        className="vio-btn vio-btn--success"
-                        disabled={isSubmitting}
-                        onClick={() => handleResolve(it, "DA_XU_LY")}
-                      >
-                        <FiCheck size={12} /> {isSubmitting ? "Đang xử lý..." : "Duyệt"}
-                      </button>
-                      <button
-                        className="vio-btn vio-btn--ghost"
-                        disabled={isSubmitting}
-                        onClick={() => handleResolve(it, "TU_CHOI")}
-                      >
-                        <FiX size={12} /> Từ chối
-                      </button>
-                    </div>
                   </div>
                 );
               })}

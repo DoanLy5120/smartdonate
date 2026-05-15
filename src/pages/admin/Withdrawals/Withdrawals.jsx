@@ -73,16 +73,8 @@ export default function Withdrawals() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [r1, r2, r3] = await Promise.all([
-        getAdminWithdrawRequests("CHO_DUYET"),
-        getAdminWithdrawRequests("DA_DUYET"),
-        getAdminWithdrawRequests("TU_CHOI"),
-      ]);
-      setAllList([
-        ...(r1?.data || []),
-        ...(r2?.data || []),
-        ...(r3?.data || []),
-      ]);
+      const res = await getAdminWithdrawRequests();
+      setAllList(res?.data || []);
     } catch (err) {
       notification.error({
         message: "Không tải được danh sách",
