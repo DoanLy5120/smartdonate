@@ -5,9 +5,9 @@ export const getNotificationsAPI = () => {
 };
 
 export const markAsReadAPI = (id) => {
-  return axiosClient.patch(`/notifications/${id}/read`);
+  return axiosClient.post(`/notifications/${id}/read`);
 };
 
 export const markAllAsReadAPI = () => {
-  return axiosClient.patch("/notifications/read-all");
+  return axiosClient.post("/notifications/read-all");
 };
